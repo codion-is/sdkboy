@@ -1,0 +1,82 @@
+= SDKBOY tutorial
+:toc: left
+:imagesdir: images
+:root-dir: ../../..
+:dir-source: ../../main/java
+:dir-resources: ../../main/resources
+:dir-source-test: ../../test/java
+:doc-url: https://codion.is/doc/{codion-version}
+
+https://github.com/codion-is/sdkboy[SDKBOY on GitHub]
+
+image::sdkboy.png[]
+
+NOTE: For running and building the app see <<#_build, Build>> section.
+
+== SDKBoyModel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/model/SDKBoyModel.java[tags=sdkboy_model]
+----
+
+== SDKBoyPanel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/ui/SDKBoyPanel.java[tags=sdkboy_panel]
+----
+
+== Module Info
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/module-info.java[lines=19..-1]
+----
+
+== Build
+
+Run the application.
+[source,shell]
+----
+gradlew run
+----
+
+Build a jlink image to `build/sdkboy`
+
+[source,shell]
+----
+gradlew jlink
+----
+
+Build a zipped jlink image to `build/sdkboy.zip`
+
+[source,shell]
+----
+gradlew jlinkZip
+----
+
+Build the default native installer(s) to `build/jpackage`
+
+[source,shell]
+----
+gradlew jpackage
+----
+
+.settings.gradle
+[%collapsible]
+====
+[source,kotlin,options="nowrap"]
+----
+include::{root-dir}/settings.gradle[]
+----
+====
+
+.build.gradle.kts
+[%collapsible]
+====
+[source,kotlin,options="nowrap"]
+----
+include::{root-dir}/build.gradle.kts[]
+----
+====

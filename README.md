@@ -1,2 +1,0 @@
-# sdkboy
-SDKMAN Desktop Application 
