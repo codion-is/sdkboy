@@ -1,0 +1,344 @@
+= SDKBOY User Manual
+:version: 1.0
+:doctype: book
+:toc: left
+:toclevels: 2
+:icons: font
+:source-highlighter: highlight.js
+
+== Introduction
+
+SDKBOY is a graphical user interface for managing Software Development Kits (SDKs) through SDKMAN!. It provides an intuitive way to browse, install, uninstall, and switch between different versions of development tools like Java, Gradle, Maven, and many others.
+
+=== What is SDKMAN!?
+
+SDKMAN! is a command-line tool for managing parallel versions of multiple Software Development Kits on most Unix-based systems. SDKBOY provides a user-friendly graphical interface to all SDKMAN! functionality.
+
+=== System Requirements
+
+* SDKMAN! installed and configured
+* Operating system supported by SDKMAN! (Unix-based systems)
+
+== Getting Started
+
+=== First Launch
+
+When you first launch SDKBOY, the application will:
+
+1. Connect to the SDKMAN! API
+2. Load the list of available SDKs (candidates)
+3. Display them in the left panel
+
+=== Main Interface
+
+The SDKBOY interface consists of three main areas:
+
+**Left Panel - Candidates**::
+Lists all available SDKs (Java, Gradle, Maven, etc.) with the number of installed versions for each.
+
+**Right Panel - Versions**::
+Shows all available versions for the selected SDK, with installation status and other details.
+
+**Shortcut Panel (Optional)**::
+Displays keyboard shortcuts and application information. Toggle with Alt+S or the "?" button.
+
+== Working with SDKs
+
+=== Browsing Available SDKs
+
+The left panel shows all available SDKs (called "candidates" in SDKMAN!):
+
+* **Name**: The SDK name (e.g., "Java", "Gradle")
+* **Installed**: Number of versions currently installed
+
+**Filtering SDKs:**
+
+* Use the filter field at the bottom to search by name
+* Check "Installed" to show only SDKs with installed versions
+* Use Up/Down arrow keys to navigate the list
+
+=== Managing Versions
+
+Select an SDK from the left panel to view its versions in the right panel.
+
+**Version Information:**
+
+* **Vendor**: Provider of the version (visible for Java)
+* **Version**: Version number or identifier
+* **Installed**: ✓ if the version is installed locally
+* **Downloaded**: ✓ if the version is downloaded but not installed
+* **Used**: ✓ if this is the currently active global version
+
+**Filtering Versions:**
+
+* **Filter field**: Search by version number or vendor name
+  - Multiple terms are supported: `tem 24` finds "Temurin 24.x"
+  - Partial matching: `24 7` finds both "24.0.7" and "24.7.0"
+* **Installed**: Show only installed versions
+* **Downloaded**: Show only downloaded versions  
+* **Used**: Show only the currently active version
+
+=== Installing Versions
+
+To install an SDK version:
+
+1. Select the SDK from the left panel
+2. Select the desired version from the right panel
+3. Use one of these methods:
+   * Press `Alt+I` or `Alt+Insert`
+   * Double-click an uninstalled version
+   * Right-click and select Install (if available)
+
+**Installation Process:**
+
+1. If not downloaded, the version will be downloaded first
+2. Progress bar shows download and extraction progress
+3. Press `Escape` or click "Cancel" to cancel during download
+4. Once complete, the version becomes available for use
+
+=== Setting Active Version
+
+To set a version as your global default:
+
+1. Select the installed version
+2. Use one of these methods:
+   * Press `Alt+U`
+   * Double-click an installed (but not used) version
+   * If the version isn't installed, it will be installed first
+
+The active version will be marked with ✓ in the "Used" column.
+
+=== Uninstalling Versions
+
+To remove an installed version:
+
+1. Select the installed version
+2. Use one of these methods:
+   * Press `Alt+D` or `Alt+Delete`
+   * Double-click the currently used version
+   * Right-click and select Uninstall (if available)
+
+NOTE: You can uninstall the currently active version. The system will revert to the previously used version or system default.
+
+=== Copying Use Commands
+
+To get the SDKMAN! command for setting a version:
+
+1. Select any version (installed or not)
+2. Press `Alt+C`
+3. The command (e.g., `sdk use java 11.0.12-open`) is copied to your clipboard
+4. If the version isn't installed, it will be installed first
+
+== Keyboard Shortcuts
+
+SDKBOY is designed for efficient keyboard operation:
+
+=== Global Shortcuts
+
+[cols="2,3"]
+|===
+|Shortcut |Action
+
+|`Alt+R` |Refresh candidates and versions
+|`Alt+P` |Open preferences
+|`Alt+S` |Toggle shortcut panel
+|`Alt+X` |Exit application
+|`Escape` |Cancel current operation
+|===
+
+=== Filter Shortcuts
+
+[cols="2,3"]
+|===
+|Shortcut |Action
+
+|`Alt+T` |Toggle "Installed" filter (Candidates)
+|`Alt+N` |Toggle "Installed" filter (Versions)
+|`Alt+A` |Toggle "Downloaded" filter
+|`Alt+E` |Toggle "Used" filter
+|===
+
+=== Navigation
+
+[cols="2,3"]
+|===
+|Shortcut |Action
+
+|`Enter` |Switch focus between candidate and version filter fields
+|`Up` |Previous item (wraps to bottom)
+|`Down` |Next item (wraps to top)
+|===
+
+NOTE: Selection starts empty. Press `Down` to select the first item or `Up` to select the last item.
+
+=== Version Management
+
+[cols="2,3"]
+|===
+|Shortcut |Action
+
+|`Alt+I` / `Alt+Insert` |Install selected version
+|`Alt+D` / `Alt+Delete` |Uninstall selected version
+|`Alt+U` |Use selected version
+|`Alt+C` |Copy use command to clipboard
+|===
+
+=== Double-Click Actions
+
+Double-clicking a version performs different actions based on its status:
+
+* **Uninstalled version**: Install
+* **Installed version**: Use (set as active)
+* **Used version**: Uninstall
+
+== Preferences
+
+Access preferences with `Alt+P` or the Preferences menu.
+
+=== General Settings
+
+**Confirm Actions** (`Alt+I`)::
+When enabled, shows confirmation dialogs before install, uninstall, and use operations.
+
+**Confirm Exit** (`Alt+X`)::
+When enabled, asks for confirmation before closing the application.
+
+=== Archive Tools
+
+Configure paths to archive extraction tools:
+
+**Zip Path** (`Alt+Z`)::
+Path to zip executable for handling .zip archives.
+
+**Unzip Path** (`Alt+U`)::
+Path to unzip executable for extracting .zip archives.
+
+**Tar Path** (`Alt+T`)::
+Path to tar executable for handling .tar.gz archives.
+
+TIP: Use the folder button next to each field to browse for the executable.
+
+=== Advanced Settings
+
+**Keep Downloads Available** (`Alt+K`)::
+When enabled, downloaded archives are kept after installation for faster reinstallation.
+
+**Log Level** (`Alt+V`)::
+Controls the verbosity of application logging. Use the buttons to open log files (`Alt+F`) or the log directory (`Alt+D`).
+
+**Look & Feel** (`Alt+L`)::
+Choose the application's visual theme.
+
+== Tips and Best Practices
+
+=== Efficient Workflow
+
+1. **Use filters**: Narrow down large lists with the filter fields
+2. **Keyboard navigation**: Learn the shortcuts for faster operation
+3. **Use Enter key**: Quickly switch between candidate and version filters
+4. **Check versions**: Use the "Used" filter to quickly see your active versions
+
+=== Managing Disk Space
+
+* Use "Keep Downloads Available" sparingly if disk space is limited
+* Regularly uninstall unused versions
+* Monitor the "Downloaded" column to see what's cached locally
+
+=== Working with Java
+
+* The vendor column is automatically shown for Java versions
+* Popular vendors include OpenJDK, Oracle, Amazon Corretto, GraalVM
+* Consider your project requirements when choosing between vendors
+
+== Troubleshooting
+
+=== Common Issues
+
+**No SDKs appear in the list**::
+* Check that SDKMAN! is properly installed and in your PATH
+* Verify internet connectivity
+* Try refreshing with `Alt+R`
+
+**Installation fails**::
+* Check available disk space
+* Verify archive tool paths in preferences
+* Check log files for detailed error information
+
+**Version not available for use**::
+* Ensure the version completed installation successfully
+* Some versions may require manual configuration
+
+**Application won't start**::
+* Check that SDKMAN! is properly configured
+* Review application logs
+
+=== Getting Help
+
+* Use `Alt+S` to show the shortcut panel with keyboard shortcuts and about information
+* Check log files through Preferences → Log Level → Open Log File
+* Visit the SDKBOY GitHub repository for issues and updates
+* Consult SDKMAN! documentation for SDK-specific questions
+
+== Advanced Usage
+
+=== SDKMAN! Home Directory
+
+SDKBOY uses the default SDKMAN! home directory (`~/.sdkman/`). Custom locations are not currently supported.
+
+=== Integration with IDEs
+
+After setting a version with SDKBOY:
+
+1. Restart your terminal or source your shell profile
+2. Verify the change with `java -version` or the appropriate command
+3. Some IDEs may need to be restarted to recognize the new version
+
+=== Command Line Equivalent
+
+SDKBOY operations correspond to these SDKMAN! commands:
+
+[cols="2,3"]
+|===
+|SDKBOY Action |SDKMAN! Command
+
+|Install |`sdk install <candidate> <version>`
+|Uninstall |`sdk uninstall <candidate> <version>`
+|Use |`sdk use <candidate> <version>`
+|List candidates |`sdk list`
+|List versions |`sdk list <candidate>`
+|===
+
+== Appendices
+
+=== Supported SDKs
+
+SDKBOY supports all SDKs available through SDKMAN!, including but not limited to:
+
+* **JVMs**: Java, GraalVM
+* **Build Tools**: Maven, Gradle, SBT, Mill
+* **Languages**: Kotlin, Scala, Groovy
+* **Frameworks**: Spring Boot CLI, Micronaut
+* **Cloud Tools**: Google Cloud SDK
+* **And many more!
+
+=== File Locations
+
+**SDKMAN! Home**: `~/.sdkman/`
+
+**Downloaded Archives**: `~/.sdkman/archives/`
+
+**Installed Versions**: `~/.sdkman/candidates/<candidate>/<version>/`
+
+**Configuration**: `~/.sdkman/etc/config`
+
+=== Version History
+
+This manual corresponds to SDKBOY version 1.0.
+
+For the latest updates and changes, visit the project repository.
+
+'''
+
+Copyright © Björn Darri Sigurðsson. Licensed under GPL v3.
+
+Source code: https://github.com/codion-is/sdkboy

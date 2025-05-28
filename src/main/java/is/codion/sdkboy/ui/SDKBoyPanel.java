@@ -20,6 +20,7 @@ package is.codion.sdkboy.ui;
 
 import is.codion.common.event.Event;
 import is.codion.common.logging.LoggerProxy;
+import is.codion.common.model.UserPreferences;
 import is.codion.common.model.selection.MultiSelection.Indexes;
 import is.codion.common.state.ObservableState;
 import is.codion.common.state.State;
@@ -72,7 +73,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static is.codion.common.model.UserPreferences.*;
 import static is.codion.common.state.State.and;
 import static is.codion.swing.common.ui.Utilities.parentWindow;
 import static is.codion.swing.common.ui.Utilities.setClipboard;
@@ -235,27 +235,27 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private static void setConfirmActionsPreference(boolean confirmActions) {
-		setUserPreference(CONFIRM_ACTIONS_KEY, Boolean.toString(confirmActions));
+		UserPreferences.set(CONFIRM_ACTIONS_KEY, Boolean.toString(confirmActions));
 	}
 
 	private static boolean getConfirmActionsPreference() {
-		return parseBoolean(getUserPreference(CONFIRM_ACTIONS_KEY, TRUE.toString()));
+		return parseBoolean(UserPreferences.get(CONFIRM_ACTIONS_KEY, TRUE.toString()));
 	}
 
 	private static void setConfirmExitPreference(boolean confirmExit) {
-		setUserPreference(CONFIRM_EXIT_KEY, Boolean.toString(confirmExit));
+		UserPreferences.set(CONFIRM_EXIT_KEY, Boolean.toString(confirmExit));
 	}
 
 	private static boolean getConfirmExitPreference() {
-		return parseBoolean(getUserPreference(CONFIRM_EXIT_KEY, TRUE.toString()));
+		return parseBoolean(UserPreferences.get(CONFIRM_EXIT_KEY, TRUE.toString()));
 	}
 
 	private static void setLookAndFeelPreference(LookAndFeelEnabler lookAndFeelEnabler) {
-		setUserPreference(LOOK_AND_FEEL_KEY, lookAndFeelEnabler.lookAndFeel().getClass().getName());
+		UserPreferences.set(LOOK_AND_FEEL_KEY, lookAndFeelEnabler.lookAndFeel().getClass().getName());
 	}
 
 	private static String getLookAndFeelPreference() {
-		return getUserPreference(LOOK_AND_FEEL_KEY, DarkFlat.class.getName());
+		return UserPreferences.get(LOOK_AND_FEEL_KEY, DarkFlat.class.getName());
 	}
 
 	private final class SDKBoyExceptionHandler implements Thread.UncaughtExceptionHandler {
@@ -704,7 +704,7 @@ public final class SDKBoyPanel extends JPanel {
 		private final ComponentValue<String, JTextField> zipExecutable;
 		private final ComponentValue<String, JTextField> unzipExecutable;
 		private final ComponentValue<String, JTextField> tarExecutable;
-		private final ComponentValue<Boolean, JCheckBox> keepDownloadsDownloaded;
+		private final ComponentValue<Boolean, JCheckBox> keepDownloadsAvailable;
 		private final ComponentValue<Boolean, JCheckBox> confirmActions;
 		private final ComponentValue<Boolean, JCheckBox> confirmExit;
 		private final ComponentValue<Level, JComboBox<Level>> logLevel;
@@ -760,7 +760,7 @@ public final class SDKBoyPanel extends JPanel {
 							.mnemonic('D')
 							.description("Open Log Directory (Alt-D)"))
 							.build();
-			keepDownloadsDownloaded = checkBox()
+			keepDownloadsAvailable = checkBox()
 							.value(preferences.sdkManUi.keepDownloadsAvailable)
 							.text("Keep downloads available")
 							.mnemonic('K')
@@ -817,7 +817,7 @@ public final class SDKBoyPanel extends JPanel {
 											.add(logDirectoryButton)
 											.build())
 							.build());
-			add(keepDownloadsDownloaded.component());
+			add(keepDownloadsAvailable.component());
 			add(confirmActions.component());
 			add(confirmExit.component());
 		}
@@ -829,9 +829,9 @@ public final class SDKBoyPanel extends JPanel {
 			preferences.sdkManUi.zipExecutable = zipExecutable.get();
 			preferences.sdkManUi.unzipExecutable = unzipExecutable.get();
 			preferences.sdkManUi.tarExecutable = tarExecutable.get();
-			preferences.sdkManUi.keepDownloadsAvailable = keepDownloadsDownloaded.getOrThrow();
+			preferences.sdkManUi.keepDownloadsAvailable = keepDownloadsAvailable.getOrThrow();
 			try {
-				flushUserPreferences();
+				UserPreferences.flush();
 				preferences.sdkManUi.save();
 			}
 			catch (Exception e) {
@@ -846,7 +846,7 @@ public final class SDKBoyPanel extends JPanel {
 			zipExecutable.set(preferences.sdkManUi.zipExecutable);
 			unzipExecutable.set(preferences.sdkManUi.unzipExecutable);
 			tarExecutable.set(preferences.sdkManUi.tarExecutable);
-			keepDownloadsDownloaded.set(preferences.sdkManUi.keepDownloadsAvailable);
+			keepDownloadsAvailable.set(preferences.sdkManUi.keepDownloadsAvailable);
 		}
 
 		private void openLogFile() {
