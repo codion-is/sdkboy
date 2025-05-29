@@ -11,6 +11,8 @@ plugins {
     id("org.asciidoctor.jvm.convert") version "4.0.4"
     // For Github Releases
     id("com.github.breadmoirai.github-release") version "2.5.2"
+    // GraalVM Native Image support
+    id("org.graalvm.buildtools.native") version "0.10.4"
 }
 
 dependencies {
@@ -36,10 +38,13 @@ version = "1.0.1"
 
 java {
     toolchain {
-        // Use the latest possible Java version
+        // Use GraalVM 24 for native image support
         languageVersion.set(JavaLanguageVersion.of(24))
+        // Request GraalVM for native image support
+        vendor.set(JvmVendorSpec.GRAAL_VM)
     }
 }
+
 
 spotless {
     // Just the license headers
@@ -158,4 +163,67 @@ tasks.register<Sync>("copyToGitHubPages") {
         "../codion-pages/doc/" + libs.versions.codion.get()
             .replace("-SNAPSHOT", "") + "/tutorials/sdkboy"
     )
+}
+
+// GraalVM Native Image configuration
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName = project.name
+            mainClass = "is.codion.sdkboy.NativeMain"
+            verbose = true
+            fallback = false
+            
+            buildArgs.add("--no-fallback")
+            buildArgs.add("-H:+ReportExceptionStackTraces")
+            buildArgs.add("-Djava.awt.headless=false")
+            buildArgs.add("-Djava.home=${System.getProperty("java.home")}")
+            buildArgs.add("--initialize-at-run-time=sun.awt,com.sun.jna,sun.java2d,sun.font,java.awt.Toolkit,sun.awt.AWTAccessor")
+            buildArgs.add("-H:+AddAllCharsets")
+            buildArgs.add("-H:+IncludeAllLocales")
+            
+            // Enable AWT/Swing support
+            buildArgs.add("-H:+EnableAllSecurityServices")
+            
+            // JNI support for native libraries
+            buildArgs.add("-H:+JNI")
+            buildArgs.add("-H:+ForeignAPISupport")
+            buildArgs.add("-H:ConfigurationFileDirectories=${projectDir}/src/main/resources/META-INF/native-image/is.codion.sdkboy")
+            
+            // Resource configuration
+            buildArgs.add("-H:IncludeResources=.*\\.(properties|xml|png|ico|icns)$")
+            buildArgs.add("-H:IncludeResources=logback.xml")
+            buildArgs.add("-H:IncludeResources=version.properties")
+            
+            // Module support
+            buildArgs.add("--add-modules=ALL-MODULE-PATH")
+            
+            // Memory settings for build
+            jvmArgs.add("-Xmx7G")
+        }
+    }
+    
+    agent {
+        defaultMode = "standard"
+        builtinCallerFilter = true
+        builtinHeuristicFilter = true
+        enableExperimentalPredefinedClasses = true
+        trackReflectionMetadata = true
+    }
+}
+
+// Task to run the application with the GraalVM agent to collect metadata
+tasks.register<JavaExec>("runWithAgent") {
+    dependsOn("classes")
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "is.codion.sdkboy.ui.SDKBoyPanel"
+    jvmArgs = listOf(
+        "-agentlib:native-image-agent=config-merge-dir=${projectDir}/src/main/resources/META-INF/native-image/is.codion.sdkboy",
+        "-Djava.awt.headless=false"
+    )
+    doFirst {
+        println("Running with GraalVM agent to collect metadata...")
+        println("IMPORTANT: Interact with as many UI components as possible!")
+        println("Config will be written to: ${projectDir}/src/main/resources/META-INF/native-image/is.codion.sdkboy")
+    }
 }
