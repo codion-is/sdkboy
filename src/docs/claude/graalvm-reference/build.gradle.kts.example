@@ -1,0 +1,54 @@
+plugins {
+    application
+    id("org.graalvm.buildtools.native") version "0.10.4"
+}
+
+application {
+    mainClass = "your.package.NativeMain"
+}
+
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName = project.name
+            mainClass = "your.package.NativeMain"
+            buildArgs.addAll(
+                "-H:+ForeignAPISupport",
+                "-H:+ReportExceptionStackTraces"
+            )
+        }
+    }
+    
+    // For running with tracing agent
+    agent {
+        defaultMode = "standard"
+    }
+}
+
+// Example dependencies for Codion applications
+dependencies {
+    implementation("is.codion:codion-swing-framework-ui:0.18.35")
+    implementation("is.codion:codion-framework-db-local:0.18.35")
+    
+    // Database driver (choose appropriate one)
+    runtimeOnly("com.h2database:h2:2.2.224")
+    // runtimeOnly("org.xerial:sqlite-jdbc:3.45.1.0")
+    
+    // Logging
+    implementation("is.codion:codion-plugin-logback-proxy:0.18.35")
+    implementation("ch.qos.logback:logback-classic:1.5.18")
+}
+
+// Native image tasks
+tasks.named("nativeCompile") {
+    doFirst {
+        println("Building native image with GraalVM ${org.gradle.internal.jvm.Jvm.current().javaVersion}")
+    }
+}
+
+// Helper task to run with agent and then build native
+tasks.register("buildNativeWithAgent") {
+    dependsOn("runWithAgent", "nativeCompile")
+    group = "graalvm"
+    description = "Run tracing agent and then build native image"
+}

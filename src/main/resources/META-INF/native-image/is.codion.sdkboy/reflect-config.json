@@ -1187,5 +1187,11 @@
 {
   "name":"sun.security.x509.SubjectKeyIdentifierExtension",
   "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.awt.X11.XRootWindow",
+  "allDeclaredConstructors":true,
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
 }
 ]

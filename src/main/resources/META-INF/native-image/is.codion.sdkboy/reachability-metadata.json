@@ -405,6 +405,15 @@
       ]
     },
     {
+      "type": "com.formdev.flatlaf.icons.FlatOptionPaneInformationIcon",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "com.formdev.flatlaf.icons.FlatOptionPaneQuestionIcon",
       "methods": [
         {
@@ -3562,6 +3571,15 @@
     },
     {
       "type": "sun.awt.X11.XFramePeer"
+    },
+    {
+      "type": "sun.awt.X11.XRootWindow",
+      "methods": [
+        {
+          "name": "getXRootWindow",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "sun.awt.X11.XToolkit",

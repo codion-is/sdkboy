@@ -1,0 +1,37 @@
+package your.package.name;
+
+/**
+ * Native image main class wrapper.
+ * 
+ * This class sets required system properties for native image execution
+ * and delegates to the actual application main class.
+ * 
+ * Usage:
+ * 1. Replace "your.package.name" with your actual package
+ * 2. Replace "YourActualMainClass" with your application's main class
+ * 3. Set this class as the main class in build.gradle.kts
+ */
+public final class NativeMain {
+    
+    public static void main(String[] args) {
+        // Set java.home property - required for some Swing components
+        String javaHome = System.getenv("JAVA_HOME");
+        if (javaHome == null) {
+            // Fallback for common Linux OpenJDK installation
+            javaHome = "/usr/lib/jvm/java-21-openjdk-amd64";
+        }
+        System.setProperty("java.home", javaHome);
+        
+        // Ensure AWT/Swing works in native image
+        System.setProperty("java.awt.headless", "false");
+        
+        // Set font path for better font rendering
+        System.setProperty("sun.java2d.fontpath", "/usr/share/fonts");
+        
+        // For H2 database (if used)
+        // System.setProperty("h2.bindAddress", "localhost");
+        
+        // Delegate to actual main class
+        YourActualMainClass.main(args);
+    }
+}

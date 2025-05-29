@@ -1,0 +1,14 @@
+# GraalVM Configuration
+# Set this to your GraalVM 24 installation path
+org.gradle.java.home=/home/user/.sdkman/candidates/java/24.0.1-graal
+
+# Build performance
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.configureondemand=true
+
+# JVM settings for build process
+org.gradle.jvmargs=-Xmx8g -XX:+UseParallelGC
+
+# Disable Gradle daemon if needed for native builds
+# org.gradle.daemon=false
