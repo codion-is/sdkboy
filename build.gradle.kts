@@ -138,21 +138,40 @@ jlink {
     }
 }
 
+// Task to create a zip of the native image
+tasks.register<Zip>("nativeImageZip") {
+    group = "distribution"
+    description = "Creates a zip of the native image"
+    
+    // Set the archive name with -native suffix
+    archiveFileName.set(project.name + "-" + project.version + "-" + 
+            OperatingSystem.current().familyName.replace(" ", "").lowercase() + "-native.zip")
+    destinationDirectory.set(layout.buildDirectory)
+    
+    // Include the native executable
+    from(layout.buildDirectory.dir("native/nativeCompile")) {
+        include("sdkboy")
+        // Make the binary executable in the zip
+        filePermissions {
+            unix("rwxr-xr-x")
+        }
+    }
+
+    dependsOn(tasks.named("nativeCompile"))
+}
+
 if (properties.containsKey("githubAccessToken")) {
     githubRelease {
         token(properties["githubAccessToken"] as String)
         owner = "codion-is"
         allowUploadToExisting = true
-        releaseAssets.from(tasks.named("jlinkZip").get().outputs.files)
-        releaseAssets.from(fileTree(tasks.named("jpackage").get().outputs.files.singleFile) {
-            exclude(project.name + "/**", project.name + ".app/**")
-        })
+        // Only add the native image zip to release assets
+        releaseAssets.from(tasks.named("nativeImageZip").get().outputs.files)
     }
 }
 
 tasks.named("githubRelease") {
-    dependsOn(tasks.named("jlinkZip"))
-    dependsOn(tasks.named("jpackage"))
+    dependsOn(tasks.named("nativeImageZip"))
 }
 
 tasks.register<Sync>("copyToGitHubPages") {
