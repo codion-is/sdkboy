@@ -479,7 +479,7 @@ public final class SDKBoyPanel extends JPanel {
 		@Override
 		public void updateUI() {
 			super.updateUI();
-			Utilities.updateUI(southPanel, refreshProgress, installingPanel, installProgress);
+			Utilities.updateUI(southPanel, refreshProgress, installingPanel, installProgress, cancelDownload);
 		}
 
 		private void onVersionDoubleClick() {
