@@ -40,8 +40,8 @@ java {
     toolchain {
         // Use GraalVM 24 for native image support
         languageVersion.set(JavaLanguageVersion.of(24))
-        // Request GraalVM for native image support
-        vendor.set(JvmVendorSpec.GRAAL_VM)
+        // Request Oracle GraalVM for native image support
+        vendor.set(JvmVendorSpec.ORACLE)
     }
 }
 
@@ -143,17 +143,33 @@ tasks.register<Zip>("nativeImageZip") {
     group = "distribution"
     description = "Creates a zip of the native image"
     
-    // Set the archive name with -native suffix
-    archiveFileName.set(project.name + "-" + project.version + "-" + 
-            OperatingSystem.current().familyName.replace(" ", "").lowercase() + "-native.zip")
+    // Set the archive name with architecture and -native suffix
+    val osName = OperatingSystem.current().familyName.replace(" ", "").lowercase()
+    val arch = System.getProperty("os.arch").let { 
+        when (it) {
+            "x86_64", "amd64" -> "x86_64"
+            "aarch64", "arm64" -> "aarch64"
+            else -> it
+        }
+    }
+    archiveFileName.set(project.name + "-" + project.version + "-" + osName + "_" + arch + "-native.zip")
     destinationDirectory.set(layout.buildDirectory)
     
-    // Include the native executable
+    // Include the native executable and required libraries
     from(layout.buildDirectory.dir("native/nativeCompile")) {
-        include("sdkboy")
-        // Make the binary executable in the zip
-        filePermissions {
-            unix("rwxr-xr-x")
+        val os = OperatingSystem.current()
+        val (executable, libraries) = when {
+            os.isWindows -> "sdkboy.exe" to listOf("*.dll")
+            os.isLinux -> "sdkboy" to listOf("*.so")
+            os.isMacOsX -> "sdkboy" to listOf("*.dylib")
+            else -> "sdkboy" to listOf("*.so", "*.dylib") // Fallback
+        }
+        include(executable)
+        libraries.forEach { include(it) }
+        if (!os.isWindows) {
+            filePermissions {
+                unix("rwxr-xr-x")
+            }
         }
     }
 
@@ -198,6 +214,18 @@ graalvmNative {
             buildArgs.add("-Djava.awt.headless=false")
             buildArgs.add("-Djava.home=${System.getProperty("java.home")}")
             buildArgs.add("--initialize-at-run-time=sun.awt,com.sun.jna,sun.java2d,sun.font,java.awt.Toolkit,sun.awt.AWTAccessor")
+            
+            // Windows-specific AWT support
+            if (OperatingSystem.current().isWindows) {
+                buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
+                buildArgs.add("-H:+AllowIncompleteClasspath")
+            }
+            // Use conservative CPU targets for maximum compatibility
+            val arch = System.getProperty("os.arch")
+            when {
+                arch == "aarch64" || arch == "arm64" -> buildArgs.add("-march=compatibility")
+                arch == "x86_64" || arch == "amd64" -> buildArgs.add("-march=x86-64")
+            }
             buildArgs.add("-H:+AddAllCharsets")
             buildArgs.add("-H:+IncludeAllLocales")
             
