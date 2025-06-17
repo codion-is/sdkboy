@@ -281,7 +281,7 @@ public final class SDKBoyPanel extends JPanel {
 			ObservableState refreshingVersions = model.versionModel()
 							.tableModel().items().refresher().active();
 			table = FilterTable.builder(candidateModel.tableModel(), createColumns())
-							.sortingEnabled(false)
+							.sortable(false)
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
@@ -397,7 +397,7 @@ public final class SDKBoyPanel extends JPanel {
 			installTask.active.addConsumer(this::onInstallActiveChanged);
 			installTask.downloading.addConsumer(this::onDownloadingChanged);
 			table = FilterTable.builder(versionModel.tableModel(), createColumns())
-							.sortingEnabled(false)
+							.sortable(false)
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)

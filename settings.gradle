@@ -7,22 +7,5 @@ rootProject.name = "sdkboy"
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        mavenLocal()
-    }
-    versionCatalogs {
-        libs {
-            version("codion", "0.18.38")
-            version("logback", "1.5.18")
-            version("commons", "1.27.1")
-            version("jna", "5.17.0");
-
-            library("codion-swing-common-ui", "is.codion", "codion-swing-common-ui").versionRef("codion")
-            library("codion-plugin-flatlaf", "is.codion", "codion-plugin-flatlaf").versionRef("codion")
-            library("codion-plugin-flatlaf-intellij-themes", "is.codion", "codion-plugin-flatlaf-intellij-themes").versionRef("codion")
-            library("codion-plugin-logback", "is.codion", "codion-plugin-logback-proxy").versionRef("codion")
-            library("logback", "ch.qos.logback", "logback-classic").versionRef("logback")
-            library("commons-compress", "org.apache.commons", "commons-compress").versionRef("commons")
-            library("jna-platform", "net.java.dev.jna", "jna-platform").versionRef("jna");
-        }
     }
 }

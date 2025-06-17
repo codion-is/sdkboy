@@ -9,11 +9,14 @@ plugins {
     id("com.diffplug.spotless") version "7.0.1"
     // For the asciidoctor docs
     id("org.asciidoctor.jvm.convert") version "4.0.4"
-    // For Github Releases
+    // For GitHub Releases
     id("com.github.breadmoirai.github-release") version "2.5.2"
 }
 
 dependencies {
+    // Import the Codion Common BOM for dependency version management
+    implementation(platform(libs.codion.common.bom))
+    
     // The Codion Swing Common UI module
     implementation(libs.codion.swing.common.ui)
     // Include all the standard Flat Look and Feels
@@ -32,7 +35,7 @@ dependencies {
     implementation(libs.jna.platform)
 }
 
-version = "1.0.2"
+version = "1.0.3"
 
 java {
     toolchain {
