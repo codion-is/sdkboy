@@ -1,0 +1,17 @@
+[versions]
+codion = "0.18.39"
+logback = "1.5.18"
+commons = "1.27.1"
+jna = "5.17.0"
+
+[libraries]
+codion-common-bom = { module = "is.codion:codion-common-bom", version.ref = "codion" }
+
+codion-swing-common-ui = { module = "is.codion:codion-swing-common-ui" }
+codion-plugin-flatlaf = { module = "is.codion:codion-plugin-flatlaf" }
+codion-plugin-flatlaf-intellij-themes = { module = "is.codion:codion-plugin-flatlaf-intellij-themes" }
+codion-plugin-logback = { module = "is.codion:codion-plugin-logback-proxy" }
+
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commons" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
