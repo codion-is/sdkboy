@@ -82,7 +82,8 @@ public final class SDKBoyModel {
 	public final class CandidateModel {
 
 		private final FilterTableModel<CandidateRow, CandidateColumn> tableModel =
-						FilterTableModel.builder(new CandidateTableColumns())
+						FilterTableModel.builder()
+										.columns(new CandidateTableColumns())
 										.supplier(new CandidateSupplier())
 										.visible(new CandidateVisible())
 										.build();
@@ -215,7 +216,8 @@ public final class SDKBoyModel {
 		private static final int DONE = 100;
 
 		private final FilterTableModel<VersionRow, VersionColumn> tableModel =
-						FilterTableModel.builder(new VersionTableColumns())
+						FilterTableModel.builder()
+										.columns(new VersionTableColumns())
 										.supplier(new VersionSupplier())
 										.visible(new VersionVisible())
 										.build();
