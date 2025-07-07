@@ -20,7 +20,7 @@ package is.codion.sdkboy.ui;
 
 import is.codion.common.event.Event;
 import is.codion.common.logging.LoggerProxy;
-import is.codion.common.model.UserPreferences;
+import is.codion.common.model.preferences.UserPreferences;
 import is.codion.common.model.selection.MultiSelection.Indexes;
 import is.codion.common.state.ObservableState;
 import is.codion.common.state.State;
@@ -38,13 +38,14 @@ import is.codion.swing.common.model.worker.ProgressWorker;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
 import is.codion.swing.common.ui.Utilities;
-import is.codion.swing.common.ui.Windows;
 import is.codion.swing.common.ui.component.Components;
 import is.codion.swing.common.ui.component.table.FilterTable;
 import is.codion.swing.common.ui.component.table.FilterTableCellRenderer;
 import is.codion.swing.common.ui.component.table.FilterTableColumn;
 import is.codion.swing.common.ui.component.value.ComponentValue;
 import is.codion.swing.common.ui.control.Control;
+import is.codion.swing.common.ui.dialog.Dialogs;
+import is.codion.swing.common.ui.frame.Frames;
 import is.codion.swing.common.ui.icon.Logos;
 import is.codion.swing.common.ui.key.KeyEvents;
 import is.codion.swing.common.ui.laf.LookAndFeelComboBox;
@@ -79,7 +80,6 @@ import static is.codion.swing.common.ui.Utilities.setClipboard;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
 import static is.codion.swing.common.ui.component.Components.*;
 import static is.codion.swing.common.ui.control.Control.command;
-import static is.codion.swing.common.ui.dialog.Dialogs.*;
 import static is.codion.swing.common.ui.laf.LookAndFeelProvider.findLookAndFeel;
 import static is.codion.swing.common.ui.layout.Layouts.borderLayout;
 import static is.codion.swing.common.ui.layout.Layouts.flexibleGridLayout;
@@ -210,7 +210,8 @@ public final class SDKBoyPanel extends JPanel {
 		if (preferencesPanel == null) {
 			preferencesPanel = new PreferencesPanel(versionPanel.preferences);
 		}
-		okCancelDialog(preferencesPanel)
+		Dialogs.okCancel()
+						.component(preferencesPanel)
 						.owner(this)
 						.title("Preferences")
 						.onOk(preferencesPanel::save)
@@ -263,7 +264,7 @@ public final class SDKBoyPanel extends JPanel {
 		@Override
 		public void uncaughtException(Thread thread, Throwable throwable) {
 			throwable.printStackTrace();
-			exceptionDialog()
+			Dialogs.exception()
 							.owner(SDKBoyPanel.this)
 							.show(throwable);
 		}
@@ -280,7 +281,9 @@ public final class SDKBoyPanel extends JPanel {
 			CandidateModel candidateModel = model.candidateModel();
 			ObservableState refreshingVersions = model.versionModel()
 							.tableModel().items().refresher().active();
-			table = FilterTable.builder(candidateModel.tableModel(), createColumns())
+			table = FilterTable.builder()
+							.model(candidateModel.tableModel())
+							.columns(createColumns())
 							.sortable(false)
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
@@ -292,24 +295,28 @@ public final class SDKBoyPanel extends JPanel {
 															.build())
 							.build();
 			Indexes selectedIndexes = candidateModel.tableModel().selection().indexes();
-			filter = stringField(candidateModel.filter())
+			filter = stringField()
+							.link(candidateModel.filter())
 							.hint("Filter...")
 							.lowerCase(true)
 							.selectAllOnFocusGained(true)
 							.transferFocusOnEnter(true)
-							.keyEvent(KeyEvents.builder(VK_UP)
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_UP)
 											.action(Control.builder()
 															.command(selectedIndexes::decrement)
 															.enabled(installing.not())
 															.build()))
-							.keyEvent(KeyEvents.builder(VK_DOWN)
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_DOWN)
 											.action(Control.builder()
 															.command(selectedIndexes::increment)
 															.enabled(installing.not())
 															.build()))
 							.enabled(installing.not())
 							.build();
-			installedOnly = checkBox(candidateModel.installedOnly())
+			installedOnly = checkBox()
+							.link(candidateModel.installedOnly())
 							.text("Installed")
 							.mnemonic('T')
 							.focusable(false)
@@ -317,7 +324,8 @@ public final class SDKBoyPanel extends JPanel {
 							.build();
 			candidateModel.tableModel().items().refresh();
 			setBorder(createCompoundBorder(createTitledBorder("Candidates"), emptyBorder()));
-			add(scrollPane(table)
+			add(scrollPane()
+							.view(table)
 							.preferredWidth(220)
 							.build(), BorderLayout.CENTER);
 			add(borderLayoutPanel()
@@ -328,10 +336,12 @@ public final class SDKBoyPanel extends JPanel {
 
 		private List<FilterTableColumn<CandidateColumn>> createColumns() {
 			return List.of(
-							FilterTableColumn.builder(CandidateColumn.NAME, 0)
+							FilterTableColumn.builder()
+											.identifier(CandidateColumn.NAME)
 											.headerValue("Name")
 											.build(),
-							FilterTableColumn.builder(CandidateColumn.INSTALLED, 1)
+							FilterTableColumn.builder()
+											.identifier(CandidateColumn.INSTALLED)
 											.headerValue("Installed")
 											.fixedWidth(80)
 											.build());
@@ -396,7 +406,9 @@ public final class SDKBoyPanel extends JPanel {
 			versionModel.tableModel().selection().item().addConsumer(this::onVersionChanged);
 			installTask.active.addConsumer(this::onInstallActiveChanged);
 			installTask.downloading.addConsumer(this::onDownloadingChanged);
-			table = FilterTable.builder(versionModel.tableModel(), createColumns())
+			table = FilterTable.builder()
+							.model(versionModel.tableModel())
+							.columns(createColumns())
 							.sortable(false)
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
@@ -407,40 +419,48 @@ public final class SDKBoyPanel extends JPanel {
 							.build();
 			table.columnModel().visible(VersionColumn.VENDOR).set(false);
 			Indexes selectedIndexes = versionModel.tableModel().selection().indexes();
-			filter = stringField(versionModel.filter())
+			filter = stringField()
+							.link(versionModel.filter())
 							.hint("Filter...")
 							.lowerCase(true)
 							.selectAllOnFocusGained(true)
 							.transferFocusOnEnter(true)
-							.keyEvent(KeyEvents.builder(VK_UP)
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_UP)
 											.action(command(selectedIndexes::decrement)))
-							.keyEvent(KeyEvents.builder(VK_DOWN)
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_DOWN)
 											.action(command(selectedIndexes::increment)))
 							.enabled(installTask.active.not())
 							.build();
-			installedOnly = checkBox(versionModel.installedOnly())
+			installedOnly = checkBox()
+							.link(versionModel.installedOnly())
 							.text("Installed")
 							.mnemonic('N')
 							.focusable(false)
 							.enabled(installTask.active.not())
 							.build();
-			downloadedOnly = checkBox(versionModel.downloadedOnly())
+			downloadedOnly = checkBox()
+							.link(versionModel.downloadedOnly())
 							.text("Downloaded")
 							.mnemonic('A')
 							.focusable(false)
 							.enabled(installTask.active.not())
 							.build();
-			usedOnly = checkBox(versionModel.usedOnly())
+			usedOnly = checkBox()
+							.link(versionModel.usedOnly())
 							.text("Used")
 							.mnemonic('E')
 							.focusable(false)
 							.enabled(installTask.active.not())
 							.build();
-			cancelDownload = button(Control.builder()
-							.command(installTask::cancel)
-							.caption("Cancel")
-							.enabled(installTask.downloading))
-							.keyEvent(KeyEvents.builder(VK_ESCAPE)
+			cancelDownload = button()
+							.control(Control.builder()
+											.command(installTask::cancel)
+											.caption("Cancel")
+											.enabled(installTask.downloading))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_ESCAPE)
 											.action(command(installTask::cancel)))
 							.build();
 			refreshProgress = progressBar()
@@ -450,14 +470,15 @@ public final class SDKBoyPanel extends JPanel {
 			installProgress = progressBar()
 							.stringPainted(true)
 							.build();
-			installingPanel = borderLayoutPanel(borderLayout())
+			installingPanel = borderLayoutPanel()
 							.centerComponent(installProgress)
 							.eastComponent(cancelDownload)
 							.build();
-			helpButton = button(Control.builder()
-							.command(this::toggleHelp)
-							.caption("?")
-							.mnemonic('S'))
+			helpButton = button()
+							.control(Control.builder()
+											.command(this::toggleHelp)
+											.caption("?")
+											.mnemonic('S'))
 							.focusable(false)
 							.build();
 			southPanel = borderLayoutPanel()
@@ -472,7 +493,9 @@ public final class SDKBoyPanel extends JPanel {
 											.build())
 							.build();
 			setBorder(createCompoundBorder(createTitledBorder("Versions"), emptyBorder()));
-			add(scrollPane(table).build(), BorderLayout.CENTER);
+			add(scrollPane()
+							.view(table)
+							.build(), BorderLayout.CENTER);
 			add(southPanel, SOUTH);
 		}
 
@@ -504,7 +527,8 @@ public final class SDKBoyPanel extends JPanel {
 
 		private void install(Runnable onResult) {
 			if (confirmInstall()) {
-				ProgressWorker.builder(installTask)
+				ProgressWorker.builder()
+								.task(installTask)
 								.onStarted(installTask::started)
 								.onProgress(installTask::progress)
 								.onPublish(installTask::publish)
@@ -521,7 +545,8 @@ public final class SDKBoyPanel extends JPanel {
 
 		private void uninstall() {
 			if (confirmUninstall()) {
-				ProgressWorker.builder(versionModel::uninstall)
+				ProgressWorker.builder()
+								.task(versionModel::uninstall)
 								.onResult(model::refresh)
 								.execute();
 			}
@@ -539,7 +564,8 @@ public final class SDKBoyPanel extends JPanel {
 
 		private void useInstalled() {
 			if (confirmUse()) {
-				ProgressWorker.builder(versionModel::use)
+				ProgressWorker.builder()
+								.task(versionModel::use)
 								.onResult(versionModel::refresh)
 								.execute();
 			}
@@ -625,21 +651,26 @@ public final class SDKBoyPanel extends JPanel {
 
 		private List<FilterTableColumn<VersionColumn>> createColumns() {
 			return List.of(
-							FilterTableColumn.builder(VersionColumn.VENDOR, 0)
+							FilterTableColumn.builder()
+											.identifier(VersionColumn.VENDOR)
 											.headerValue("Vendor")
 											.build(),
-							FilterTableColumn.builder(VersionColumn.VERSION, 1)
+							FilterTableColumn.builder()
+											.identifier(VersionColumn.VERSION)
 											.headerValue("Version")
 											.build(),
-							FilterTableColumn.builder(VersionColumn.INSTALLED, 2)
+							FilterTableColumn.builder()
+											.identifier(VersionColumn.INSTALLED)
 											.headerValue("Installed")
 											.fixedWidth(80)
 											.build(),
-							FilterTableColumn.builder(VersionColumn.DOWNLOADED, 3)
+							FilterTableColumn.builder()
+											.identifier(VersionColumn.DOWNLOADED)
 											.headerValue("Downloaded")
 											.fixedWidth(90)
 											.build(),
-							FilterTableColumn.builder(VersionColumn.USED, 4)
+							FilterTableColumn.builder()
+											.identifier(VersionColumn.USED)
 											.headerValue("Used")
 											.fixedWidth(60)
 											.build());
@@ -690,11 +721,11 @@ public final class SDKBoyPanel extends JPanel {
 		private final SdkManUiPreferences sdkManUi = SdkManUiPreferences.getInstance();
 		private final State confirmActions = State.state(getConfirmActionsPreference());
 		private final State confirmExit = State.state(getConfirmExitPreference());
-		private final FilterComboBoxModel<Level> logLevels =
-						FilterComboBoxModel.builder(LOGGER.levels().stream()
-														.map(Level.class::cast)
-														.toList())
-										.build();
+		private final FilterComboBoxModel<Level> logLevels = FilterComboBoxModel.builder()
+						.items(LOGGER.levels().stream()
+										.map(Level.class::cast)
+										.toList())
+						.build();
 	}
 
 	private static final class PreferencesPanel extends JPanel {
@@ -736,83 +767,101 @@ public final class SDKBoyPanel extends JPanel {
 							.selectAllOnFocusGained(true)
 							.buildValue();
 			Icon directoryIcon = getIcon("FileView.directoryIcon");
-			browseZipExecutableButton = button(Control.builder()
-							.command(() -> browseExecutable(zipExecutable))
-							.smallIcon(directoryIcon))
+			browseZipExecutableButton = button()
+							.control(Control.builder()
+											.command(() -> browseExecutable(zipExecutable))
+											.smallIcon(directoryIcon))
 							.build();
-			browseUnzipExecutableButton = button(Control.builder()
-							.command(() -> browseExecutable(unzipExecutable))
-							.smallIcon(directoryIcon))
+			browseUnzipExecutableButton = button()
+							.control(Control.builder()
+											.command(() -> browseExecutable(unzipExecutable))
+											.smallIcon(directoryIcon))
 							.build();
-			browseTarExecutableButton = button(Control.builder()
-							.command(() -> browseExecutable(tarExecutable))
-							.smallIcon(directoryIcon))
+			browseTarExecutableButton = button()
+							.control(Control.builder()
+											.command(() -> browseExecutable(tarExecutable))
+											.smallIcon(directoryIcon))
 							.build();
-			logFileButton = button(Control.builder()
-							.command(this::openLogFile)
-							.smallIcon(getIcon("FileView.fileIcon"))
-							.mnemonic('F')
-							.description("Open Log File (Alt-F)"))
+			logFileButton = button()
+							.control(Control.builder()
+											.command(this::openLogFile)
+											.smallIcon(getIcon("FileView.fileIcon"))
+											.mnemonic('F')
+											.description("Open Log File (Alt-F)"))
 							.build();
-			logDirectoryButton = button(Control.builder()
-							.command(this::openLogDirectory)
-							.smallIcon(directoryIcon)
-							.mnemonic('D')
-							.description("Open Log Directory (Alt-D)"))
+			logDirectoryButton = button()
+							.control(Control.builder()
+											.command(this::openLogDirectory)
+											.smallIcon(directoryIcon)
+											.mnemonic('D')
+											.description("Open Log Directory (Alt-D)"))
 							.build();
 			keepDownloadsAvailable = checkBox()
 							.value(preferences.sdkManUi.keepDownloadsAvailable)
 							.text("Keep downloads available")
 							.mnemonic('K')
 							.buildValue();
-			confirmActions = checkBox(preferences.confirmActions)
+			confirmActions = checkBox()
+							.link(preferences.confirmActions)
 							.text("Confirm install, uninstall and use")
 							.mnemonic('I')
 							.buildValue();
-			confirmExit = checkBox(preferences.confirmExit)
+			confirmExit = checkBox()
+							.link(preferences.confirmExit)
 							.text("Confirm exit")
 							.mnemonic('X')
 							.buildValue();
-			logLevel = Components.comboBox(preferences.logLevels)
+			logLevel = Components.comboBox()
+							.model(preferences.logLevels)
 							.value((Level) PreferencesModel.LOGGER.getLogLevel())
 							.buildValue();
 			setBorder(emptyBorder());
-			add(label("Look & Feel")
+			add(label()
+							.text("Look & Feel")
 							.displayedMnemonic('L')
 							.labelFor(lookAndFeelComboBox)
 							.build());
 			add(lookAndFeelComboBox);
-			add(label("Select zip path")
+			add(label()
+							.text("Select zip path")
 							.displayedMnemonic('Z')
 							.labelFor(zipExecutable.component())
 							.build());
-			add(borderLayoutPanel(new BorderLayout(0, 5))
+			add(borderLayoutPanel()
+							.layout(new BorderLayout(0, 5))
 							.centerComponent(zipExecutable.component())
 							.eastComponent(browseZipExecutableButton)
 							.build());
-			add(label("Select unzip path")
+			add(label()
+							.text("Select unzip path")
 							.displayedMnemonic('U')
 							.labelFor(unzipExecutable.component())
 							.build());
-			add(borderLayoutPanel(new BorderLayout(0, 5))
+			add(borderLayoutPanel()
+							.layout(new BorderLayout(0, 5))
 							.centerComponent(unzipExecutable.component())
 							.eastComponent(browseUnzipExecutableButton)
 							.build());
-			add(label("Select tar path")
+			add(label()
+							.text("Select tar path")
 							.displayedMnemonic('T')
 							.labelFor(tarExecutable.component())
 							.build());
-			add(borderLayoutPanel(new BorderLayout(0, 5))
+			add(borderLayoutPanel()
+							.layout(new BorderLayout(0, 5))
 							.centerComponent(tarExecutable.component())
 							.eastComponent(browseTarExecutableButton)
 							.build());
-			add(label("Log level")
+			add(label()
+							.text("Log level")
 							.displayedMnemonic('V')
 							.labelFor(logLevel.component())
 							.build());
-			add(borderLayoutPanel(new BorderLayout(0, 5))
+			add(borderLayoutPanel()
+							.layout(new BorderLayout(0, 5))
 							.centerComponent(logLevel.component())
-							.eastComponent(panel(new GridLayout(1, 0, 0, 5))
+							.eastComponent(panel()
+											.layout(new GridLayout(1, 0, 0, 5))
 											.add(logFileButton)
 											.add(logDirectoryButton)
 											.build())
@@ -874,7 +923,8 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void browseExecutable(Value<String> executable) {
-			executable.set(fileSelectionDialog()
+			executable.set(Dialogs.select()
+							.files()
 							.owner(this)
 							.title("Select executable")
 							.selectFile()
@@ -959,7 +1009,7 @@ public final class SDKBoyPanel extends JPanel {
 	public static void main(String[] args) {
 		setDefaultUncaughtExceptionHandler((_, throwable) -> {
 			throwable.printStackTrace();
-			exceptionDialog().show(throwable);
+			Dialogs.exception().show(throwable);
 		});
 
 		findLookAndFeel(getLookAndFeelPreference())
@@ -967,7 +1017,8 @@ public final class SDKBoyPanel extends JPanel {
 
 		SDKBoyPanel sdkBoyPanel = new SDKBoyPanel();
 
-		Windows.frame(sdkBoyPanel)
+		Frames.builder()
+						.component(sdkBoyPanel)
 						.title("SDKBOY " + SDKBoyModel.VERSION)
 						.icon(Logos.logoTransparent())
 						.centerFrame(true)
