@@ -78,8 +78,12 @@ tasks.withType<JavaCompile>().configureEach {
 
 // Configure the docs generation
 tasks.asciidoctor {
-    inputs.dir("src")
+    dependsOn(tasks.build)
+    inputs.files(sourceSets.main.get().allSource)
+    inputs.file(project.buildFile)
+
     baseDirFollowsSourceFile()
+
     attributes(
         mapOf(
             "source-highlighter" to "prettify",
