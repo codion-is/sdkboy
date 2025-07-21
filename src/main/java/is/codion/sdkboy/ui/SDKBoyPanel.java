@@ -290,7 +290,8 @@ public final class SDKBoyPanel extends JPanel {
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
 							.enabled(and(installing.not(), refreshingVersions.not()))
 							.cellRenderer(CandidateColumn.INSTALLED,
-											FilterTableCellRenderer.builder(Integer.class)
+											FilterTableCellRenderer.builder()
+															.columnClass(Integer.class)
 															.horizontalAlignment(CENTER)
 															.build())
 							.build();
