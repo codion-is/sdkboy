@@ -161,36 +161,35 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private void setupKeyEvents() {
-		KeyEvents.Builder keyEvent = KeyEvents.builder()
+		KeyEvents.builder()
 						.condition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-						.modifiers(ALT_DOWN_MASK);
-		keyEvent.keyCode(VK_P)
-						.action(command(this::displayPreferences))
-						.enable(this);
-		keyEvent.keyCode(VK_R)
-						.action(command(versionPanel::refreshCandidates))
-						.enable(this);
-		keyEvent.keyCode(VK_X)
-						.action(command(this::exit))
-						.enable(this);
-		keyEvent.keyCode(VK_INSERT)
-						.action(versionPanel.installControl)
-						.enable(this);
-		keyEvent.keyCode(VK_DELETE)
-						.action(versionPanel.uninstallControl)
-						.enable(this);
-		keyEvent.keyCode(VK_I)
-						.action(versionPanel.installControl)
-						.enable(this);
-		keyEvent.keyCode(VK_D)
-						.action(versionPanel.uninstallControl)
-						.enable(this);
-		keyEvent.keyCode(VK_U)
-						.action(versionPanel.useControl)
-						.enable(this);
-		keyEvent.keyCode(VK_C)
 						.modifiers(ALT_DOWN_MASK)
-						.action(versionPanel.copyUseCommandControl)
+						.keyCode(VK_P)
+						.action(command(this::displayPreferences))
+						.enable(this)
+						.keyCode(VK_R)
+						.action(command(versionPanel::refreshCandidates))
+						.enable(this)
+						.keyCode(VK_X)
+						.action(command(this::exit))
+						.enable(this)
+						.keyCode(VK_INSERT)
+						.action(versionPanel.install)
+						.enable(this)
+						.keyCode(VK_DELETE)
+						.action(versionPanel.uninstall)
+						.enable(this)
+						.keyCode(VK_I)
+						.action(versionPanel.install)
+						.enable(this)
+						.keyCode(VK_D)
+						.action(versionPanel.uninstall)
+						.enable(this)
+						.keyCode(VK_U)
+						.action(versionPanel.use)
+						.enable(this)
+						.keyCode(VK_C)
+						.action(versionPanel.copyUseCommand)
 						.enable(this);
 	}
 
@@ -370,10 +369,10 @@ public final class SDKBoyPanel extends JPanel {
 		private final JButton cancelDownload;
 		private final JPanel installingPanel;
 		private final JPanel southPanel;
-		private final Control installControl;
-		private final Control uninstallControl;
-		private final Control useControl;
-		private final Control copyUseCommandControl;
+		private final Control install;
+		private final Control uninstall;
+		private final Control use;
+		private final Control copyUseCommand;
 		private final JButton helpButton;
 
 		private VersionPanel(SDKBoyModel model, State help) {
@@ -383,23 +382,23 @@ public final class SDKBoyPanel extends JPanel {
 			this.versionModel = model.versionModel();
 			this.help = help;
 			this.installTask = new InstallTask();
-			this.installControl = Control.builder()
+			this.install = Control.builder()
 							.command(this::install)
 							.enabled(and(
 											versionModel.tableModel().selection().empty().not(),
 											versionModel.selectedInstalled().not()))
 							.build();
-			this.uninstallControl = Control.builder()
+			this.uninstall = Control.builder()
 							.command(this::uninstall)
 							.enabled(and(
 											versionModel.tableModel().selection().empty().not(),
 											versionModel.selectedInstalled()))
 							.build();
-			this.useControl = Control.builder()
+			this.use = Control.builder()
 							.command(this::use)
 							.enabled(versionModel.selectedUsed().not())
 							.build();
-			this.copyUseCommandControl = Control.builder()
+			this.copyUseCommand = Control.builder()
 							.command(this::copyUseCommand)
 							.build();
 			candidateModel.tableModel().selection().item().addConsumer(this::onCandidateChanged);
@@ -414,7 +413,7 @@ public final class SDKBoyPanel extends JPanel {
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
-							.columnReorderingAllowed(false)
+							.columnReordering(false)
 							.doubleClick(command(this::onVersionDoubleClick))
 							.enabled(installTask.active.not())
 							.build();
