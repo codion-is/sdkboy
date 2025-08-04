@@ -373,10 +373,10 @@ public final class SDKBoyModel {
 		}
 
 		/**
-		 * Sort "normal" version strings correctly, that is,
+		 * Sort semantic version strings correctly, that is,
 		 * ones using the major.minor.patch-metadata format.
 		 * For other formats, textual sorting is used.
-		 * @param version the standard Version, if downloaded
+		 * @param version the semantic Version, if available
 		 * @param versionName the version name
 		 */
 		public record VersionInfo(Version version, String versionName) implements Comparable<VersionInfo> {
@@ -443,25 +443,23 @@ public final class SDKBoyModel {
 
 			@Override
 			public Collection<VersionRow> get() {
-				CandidateRow candidateRow = candidateModel.tableModel.selection().item().get();
-				if (candidateRow == null) {
-					return List.of();
-				}
+				return candidateModel.tableModel.selection().item().optional()
+								.map(this::candidateVersions)
+								.orElse(List.of());
+			}
+
+			private Collection<VersionRow> candidateVersions(CandidateRow candidateRow) {
 				try {
 					String inUse = sdkMan.resolveCurrentVersion(candidateRow.candidate().id());
 
 					return sdkMan.getVersions(candidateRow.candidate().id()).stream()
-									.map(version -> createRow(candidateRow, version, inUse))
+									.map(version -> new VersionRow(candidateRow.candidate(), version,
+													VersionInfo.of(version.version()), version.identifier().equals(inUse)))
 									.toList();
 				}
 				catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-			}
-
-			private static VersionRow createRow(CandidateRow candidateRow, CandidateVersion version, String inUse) {
-				return new VersionRow(candidateRow.candidate(), version,
-								VersionInfo.of(version.version()), version.identifier().equals(inUse));
 			}
 		}
 

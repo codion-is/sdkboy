@@ -133,7 +133,7 @@ public final class SDKBoyPanel extends JPanel {
 	private final CandidatePanel candidatePanel;
 	private final VersionPanel versionPanel;
 	private final State help = State.builder()
-					.consumer(this::onHelpChanged)
+					.consumer(this::onHelp)
 					.build();
 
 	private PreferencesPanel preferencesPanel;
@@ -193,7 +193,7 @@ public final class SDKBoyPanel extends JPanel {
 						.enable(this);
 	}
 
-	private void onHelpChanged(boolean visible) {
+	private void onHelp(boolean visible) {
 		if (visible) {
 			add(new HelpPanel(), EAST);
 		}
@@ -303,16 +303,10 @@ public final class SDKBoyPanel extends JPanel {
 							.transferFocusOnEnter(true)
 							.keyEvent(KeyEvents.builder()
 											.keyCode(VK_UP)
-											.action(Control.builder()
-															.command(selectedIndexes::decrement)
-															.enabled(installing.not())
-															.build()))
+											.action(command(selectedIndexes::decrement)))
 							.keyEvent(KeyEvents.builder()
 											.keyCode(VK_DOWN)
-											.action(Control.builder()
-															.command(selectedIndexes::increment)
-															.enabled(installing.not())
-															.build()))
+											.action(command(selectedIndexes::increment)))
 							.enabled(installing.not())
 							.build();
 			installedOnly = checkBox()
@@ -401,11 +395,11 @@ public final class SDKBoyPanel extends JPanel {
 			this.copyUseCommand = Control.builder()
 							.command(this::copyUseCommand)
 							.build();
-			candidateModel.tableModel().selection().item().addConsumer(this::onCandidateChanged);
-			versionModel.tableModel().items().refresher().active().addConsumer(this::onRefreshingChanged);
-			versionModel.tableModel().selection().item().addConsumer(this::onVersionChanged);
-			installTask.active.addConsumer(this::onInstallActiveChanged);
-			installTask.downloading.addConsumer(this::onDownloadingChanged);
+			candidateModel.tableModel().selection().item().addConsumer(this::onCandidateSelected);
+			versionModel.tableModel().items().refresher().active().addConsumer(this::onRefreshing);
+			versionModel.tableModel().selection().item().addConsumer(this::onVersionSelected);
+			installTask.active.addConsumer(this::onInstalling);
+			installTask.downloading.addConsumer(this::onDownloading);
 			table = FilterTable.builder()
 							.model(versionModel.tableModel())
 							.columns(createColumns())
@@ -518,10 +512,10 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void install() {
-			install(null);
+			install(() -> {});
 		}
 
-		private void install(Runnable onResult) {
+		private void install(Runnable onInstalled) {
 			if (confirmInstall()) {
 				ProgressWorker.builder()
 								.task(installTask)
@@ -529,12 +523,7 @@ public final class SDKBoyPanel extends JPanel {
 								.onProgress(installTask::progress)
 								.onPublish(installTask::publish)
 								.onDone(installTask::done)
-								.onResult(() -> {
-									model.refresh();
-									if (onResult != null) {
-										onResult.run();
-									}
-								})
+								.onResult(() -> installTask.result(onInstalled))
 								.execute();
 			}
 		}
@@ -605,25 +594,25 @@ public final class SDKBoyPanel extends JPanel {
 			return selectedVersionName.get();
 		}
 
-		private void onCandidateChanged(CandidateRow candidateRow) {
+		private void onCandidateSelected(CandidateRow candidateRow) {
 			table.columnModel().visible(VersionColumn.VENDOR)
 							.set(candidateRow != null && JAVA.equals(candidateRow.candidate().name()));
 		}
 
-		private void onRefreshingChanged(boolean refreshing) {
+		private void onRefreshing(boolean refreshing) {
 			toggleSouthPanel(refreshProgress, refreshing);
 		}
 
-		private void onVersionChanged(VersionRow versionRow) {
+		private void onVersionSelected(VersionRow versionRow) {
 			selectedVersionName.set(versionRow == null ? null :
 							versionRow.candidate().name() + " " + versionRow.version().identifier());
 		}
 
-		private void onInstallActiveChanged(boolean installActive) {
-			toggleSouthPanel(installingPanel, installActive);
+		private void onInstalling(boolean installing) {
+			toggleSouthPanel(installingPanel, installing);
 		}
 
-		private void onDownloadingChanged(boolean downloading) {
+		private void onDownloading(boolean downloading) {
 			installProgress.setIndeterminate(!downloading);
 			if (downloading) {
 				cancelDownload.requestFocusInWindow();
@@ -706,6 +695,11 @@ public final class SDKBoyPanel extends JPanel {
 				filter.requestFocusInWindow();
 				downloading.set(false);
 				active.set(false);
+			}
+
+			private void result(Runnable onInstalled) {
+				model.refresh();
+				onInstalled.run();
 			}
 		}
 	}
