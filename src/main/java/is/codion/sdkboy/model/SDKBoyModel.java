@@ -19,7 +19,7 @@
 package is.codion.sdkboy.model;
 
 import is.codion.common.model.CancelException;
-import is.codion.common.observable.Observer;
+import is.codion.common.observer.Observer;
 import is.codion.common.state.ObservableState;
 import is.codion.common.state.State;
 import is.codion.common.value.Value;
@@ -199,7 +199,7 @@ public final class SDKBoyModel {
 
 			@Override
 			public boolean test(CandidateRow candidateRow) {
-				if (installedOnly.get() && candidateRow.installed() == 0) {
+				if (installedOnly.is() && candidateRow.installed() == 0) {
 					return false;
 				}
 				if (filter.isNull()) {
@@ -329,7 +329,7 @@ public final class SDKBoyModel {
 
 		private void onFilterChanged() {
 			tableModel.items().filter();
-			if (!filter.isNull() || tableModel.selection().empty().get()) {
+			if (!filter.isNull() || tableModel.selection().empty().is()) {
 				tableModel.selection().indexes().clear();
 				tableModel.selection().indexes().increment();
 			}
@@ -337,7 +337,7 @@ public final class SDKBoyModel {
 
 		private void onCandidateSelected() {
 			tableModel.items().refresh(_ -> {
-				if (tableModel.selection().empty().get()) {
+				if (tableModel.selection().empty().is()) {
 					tableModel.selection().indexes().increment();
 				}
 			});
@@ -470,13 +470,13 @@ public final class SDKBoyModel {
 			@Override
 			public boolean test(VersionRow versionRow) {
 				CandidateVersion candidateVersion = versionRow.version;
-				if (installedOnly.get() && !candidateVersion.installed()) {
+				if (installedOnly.is() && !candidateVersion.installed()) {
 					return false;
 				}
-				if (downloadedOnly.get() && !candidateVersion.available()) {
+				if (downloadedOnly.is() && !candidateVersion.available()) {
 					return false;
 				}
-				if (usedOnly.get() && !versionRow.used) {
+				if (usedOnly.is() && !versionRow.used) {
 					return false;
 				}
 				if (filter.isNull()) {
@@ -508,7 +508,7 @@ public final class SDKBoyModel {
 			@Override
 			public void publishProgress(int value) {
 				downloading.set(value >= 1 && value < 100);
-				if (downloading.get()) {
+				if (downloading.is()) {
 					progress.publish("Downloading");
 					progress.report(value);
 				}

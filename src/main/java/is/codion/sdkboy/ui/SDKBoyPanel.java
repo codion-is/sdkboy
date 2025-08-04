@@ -225,11 +225,11 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private boolean confirmExit() {
-		if (versionPanel.installTask.active.get()) {
+		if (versionPanel.installTask.active.is()) {
 			return false;
 		}
 
-		return !versionPanel.preferences.confirmExit.get() || showConfirmDialog(this,
+		return !versionPanel.preferences.confirmExit.is() || showConfirmDialog(this,
 						"Are you sure you want to exit?",
 						"Confirm Exit", YES_NO_OPTION, QUESTION_MESSAGE) == YES_OPTION;
 	}
@@ -476,7 +476,7 @@ public final class SDKBoyPanel extends JPanel {
 							.build();
 			helpButton = button()
 							.control(Control.builder()
-											.command(this::toggleHelp)
+											.command(help::toggle)
 											.caption("?")
 											.mnemonic('S'))
 							.focusable(false)
@@ -506,19 +506,15 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void onVersionDoubleClick() {
-			if (versionModel.selectedUsed().get()) {
+			if (versionModel.selectedUsed().is()) {
 				uninstall();
 			}
-			else if (versionModel.selectedInstalled().get()) {
+			else if (versionModel.selectedInstalled().is()) {
 				use();
 			}
 			else {
 				install();
 			}
-		}
-
-		private void toggleHelp() {
-			help.set(!help.get());
 		}
 
 		private void install() {
@@ -588,19 +584,19 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private boolean confirmInstall() {
-			return !preferences.confirmActions.get() || showConfirmDialog(this,
+			return !preferences.confirmActions.is() || showConfirmDialog(this,
 							"Install " + versionName() + "?",
 							"Confirm install", YES_NO_OPTION) == YES_OPTION;
 		}
 
 		private boolean confirmUninstall() {
-			return !preferences.confirmActions.get() || showConfirmDialog(this,
+			return !preferences.confirmActions.is() || showConfirmDialog(this,
 							"Uninstall " + versionName() + "?",
 							"Confirm uninstall", YES_NO_OPTION) == YES_OPTION;
 		}
 
 		private boolean confirmUse() {
-			return !preferences.confirmActions.get() || showConfirmDialog(this,
+			return !preferences.confirmActions.is() || showConfirmDialog(this,
 							"Set " + versionName() + " as your global SDK?",
 							"Confirm use", YES_NO_OPTION) == YES_OPTION;
 		}
@@ -872,8 +868,8 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void save() {
-			setConfirmActionsPreference(preferences.confirmActions.get());
-			setConfirmExitPreference(preferences.confirmExit.get());
+			setConfirmActionsPreference(preferences.confirmActions.is());
+			setConfirmExitPreference(preferences.confirmExit.is());
 			PreferencesModel.LOGGER.setLogLevel(logLevel.getOrThrow());
 			preferences.sdkManUi.zipExecutable = zipExecutable.get();
 			preferences.sdkManUi.unzipExecutable = unzipExecutable.get();
