@@ -108,6 +108,7 @@ public final class SDKBoyPanel extends JPanel {
 					Up           Previous
 					Down         Next
 					Escape       Cancel
+					Alt-E        Description
 					Alt-S        Shortcuts
 					Alt-P        Preferences
 					Alt-R        Refresh
@@ -116,7 +117,6 @@ public final class SDKBoyPanel extends JPanel {
 					Alt-D/Del    Uninstall
 					Alt-U        Use
 					Alt-C        Copy USE Command
-					             To Clipboard
 					Double Click Version
 					Uninstalled :Install
 					Installed   :Use
@@ -164,6 +164,9 @@ public final class SDKBoyPanel extends JPanel {
 		KeyEvents.builder()
 						.condition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
 						.modifiers(ALT_DOWN_MASK)
+						.keyCode(VK_E)
+						.action(command(this::displayDescription))
+						.enable(this)
 						.keyCode(VK_P)
 						.action(command(this::displayPreferences))
 						.enable(this)
@@ -216,6 +219,22 @@ public final class SDKBoyPanel extends JPanel {
 						.onOk(preferencesPanel::save)
 						.onCancel(preferencesPanel::cancel)
 						.show();
+	}
+
+	private void displayDescription() {
+		candidatePanel.table.model().selection().item().optional()
+						.ifPresent(candidateRow -> Dialogs.builder()
+										.component(textArea()
+														.value(candidateRow.candidate().description())
+														.rowsColumns(8, 40)
+														.editable(false)
+														.lineWrap(true)
+														.wrapStyleWord(true)
+														.scrollPane()
+														.build())
+										.owner(this)
+										.title(candidateRow.candidate().name() + " - Description")
+										.show());
 	}
 
 	private void exit() {
