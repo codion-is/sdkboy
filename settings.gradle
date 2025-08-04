@@ -7,5 +7,6 @@ rootProject.name = "sdkboy"
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
+        mavenLocal()
     }
 }

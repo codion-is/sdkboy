@@ -108,6 +108,7 @@ public final class SDKBoyPanel extends JPanel {
 					Up           Previous
 					Down         Next
 					Escape       Cancel
+					Alt-E        Description
 					Alt-S        Shortcuts
 					Alt-P        Preferences
 					Alt-R        Refresh
@@ -116,7 +117,6 @@ public final class SDKBoyPanel extends JPanel {
 					Alt-D/Del    Uninstall
 					Alt-U        Use
 					Alt-C        Copy USE Command
-					             To Clipboard
 					Double Click Version
 					Uninstalled :Install
 					Installed   :Use
@@ -133,7 +133,7 @@ public final class SDKBoyPanel extends JPanel {
 	private final CandidatePanel candidatePanel;
 	private final VersionPanel versionPanel;
 	private final State help = State.builder()
-					.consumer(this::onHelpChanged)
+					.consumer(this::onHelp)
 					.build();
 
 	private PreferencesPanel preferencesPanel;
@@ -161,40 +161,42 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private void setupKeyEvents() {
-		KeyEvents.Builder keyEvent = KeyEvents.builder()
+		KeyEvents.builder()
 						.condition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-						.modifiers(ALT_DOWN_MASK);
-		keyEvent.keyCode(VK_P)
-						.action(command(this::displayPreferences))
-						.enable(this);
-		keyEvent.keyCode(VK_R)
-						.action(command(versionPanel::refreshCandidates))
-						.enable(this);
-		keyEvent.keyCode(VK_X)
-						.action(command(this::exit))
-						.enable(this);
-		keyEvent.keyCode(VK_INSERT)
-						.action(versionPanel.installControl)
-						.enable(this);
-		keyEvent.keyCode(VK_DELETE)
-						.action(versionPanel.uninstallControl)
-						.enable(this);
-		keyEvent.keyCode(VK_I)
-						.action(versionPanel.installControl)
-						.enable(this);
-		keyEvent.keyCode(VK_D)
-						.action(versionPanel.uninstallControl)
-						.enable(this);
-		keyEvent.keyCode(VK_U)
-						.action(versionPanel.useControl)
-						.enable(this);
-		keyEvent.keyCode(VK_C)
 						.modifiers(ALT_DOWN_MASK)
-						.action(versionPanel.copyUseCommandControl)
+						.keyCode(VK_E)
+						.action(command(this::displayDescription))
+						.enable(this)
+						.keyCode(VK_P)
+						.action(command(this::displayPreferences))
+						.enable(this)
+						.keyCode(VK_R)
+						.action(command(versionPanel::refreshCandidates))
+						.enable(this)
+						.keyCode(VK_X)
+						.action(command(this::exit))
+						.enable(this)
+						.keyCode(VK_INSERT)
+						.action(versionPanel.install)
+						.enable(this)
+						.keyCode(VK_DELETE)
+						.action(versionPanel.uninstall)
+						.enable(this)
+						.keyCode(VK_I)
+						.action(versionPanel.install)
+						.enable(this)
+						.keyCode(VK_D)
+						.action(versionPanel.uninstall)
+						.enable(this)
+						.keyCode(VK_U)
+						.action(versionPanel.use)
+						.enable(this)
+						.keyCode(VK_C)
+						.action(versionPanel.copyUseCommand)
 						.enable(this);
 	}
 
-	private void onHelpChanged(boolean visible) {
+	private void onHelp(boolean visible) {
 		if (visible) {
 			add(new HelpPanel(), EAST);
 		}
@@ -219,6 +221,22 @@ public final class SDKBoyPanel extends JPanel {
 						.show();
 	}
 
+	private void displayDescription() {
+		candidatePanel.table.model().selection().item().optional()
+						.ifPresent(candidateRow -> Dialogs.builder()
+										.component(textArea()
+														.value(candidateRow.candidate().description())
+														.rowsColumns(8, 40)
+														.editable(false)
+														.lineWrap(true)
+														.wrapStyleWord(true)
+														.scrollPane()
+														.build())
+										.owner(this)
+										.title(candidateRow.candidate().name() + " - Description")
+										.show());
+	}
+
 	private void exit() {
 		if (confirmExit()) {
 			parentWindow(this).dispose();
@@ -226,11 +244,11 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private boolean confirmExit() {
-		if (versionPanel.installTask.active.get()) {
+		if (versionPanel.installTask.active.is()) {
 			return false;
 		}
 
-		return !versionPanel.preferences.confirmExit.get() || showConfirmDialog(this,
+		return !versionPanel.preferences.confirmExit.is() || showConfirmDialog(this,
 						"Are you sure you want to exit?",
 						"Confirm Exit", YES_NO_OPTION, QUESTION_MESSAGE) == YES_OPTION;
 	}
@@ -304,16 +322,10 @@ public final class SDKBoyPanel extends JPanel {
 							.transferFocusOnEnter(true)
 							.keyEvent(KeyEvents.builder()
 											.keyCode(VK_UP)
-											.action(Control.builder()
-															.command(selectedIndexes::decrement)
-															.enabled(installing.not())
-															.build()))
+											.action(command(selectedIndexes::decrement)))
 							.keyEvent(KeyEvents.builder()
 											.keyCode(VK_DOWN)
-											.action(Control.builder()
-															.command(selectedIndexes::increment)
-															.enabled(installing.not())
-															.build()))
+											.action(command(selectedIndexes::increment)))
 							.enabled(installing.not())
 							.build();
 			installedOnly = checkBox()
@@ -370,10 +382,10 @@ public final class SDKBoyPanel extends JPanel {
 		private final JButton cancelDownload;
 		private final JPanel installingPanel;
 		private final JPanel southPanel;
-		private final Control installControl;
-		private final Control uninstallControl;
-		private final Control useControl;
-		private final Control copyUseCommandControl;
+		private final Control install;
+		private final Control uninstall;
+		private final Control use;
+		private final Control copyUseCommand;
 		private final JButton helpButton;
 
 		private VersionPanel(SDKBoyModel model, State help) {
@@ -383,30 +395,30 @@ public final class SDKBoyPanel extends JPanel {
 			this.versionModel = model.versionModel();
 			this.help = help;
 			this.installTask = new InstallTask();
-			this.installControl = Control.builder()
+			this.install = Control.builder()
 							.command(this::install)
 							.enabled(and(
 											versionModel.tableModel().selection().empty().not(),
 											versionModel.selectedInstalled().not()))
 							.build();
-			this.uninstallControl = Control.builder()
+			this.uninstall = Control.builder()
 							.command(this::uninstall)
 							.enabled(and(
 											versionModel.tableModel().selection().empty().not(),
 											versionModel.selectedInstalled()))
 							.build();
-			this.useControl = Control.builder()
+			this.use = Control.builder()
 							.command(this::use)
 							.enabled(versionModel.selectedUsed().not())
 							.build();
-			this.copyUseCommandControl = Control.builder()
+			this.copyUseCommand = Control.builder()
 							.command(this::copyUseCommand)
 							.build();
-			candidateModel.tableModel().selection().item().addConsumer(this::onCandidateChanged);
-			versionModel.tableModel().items().refresher().active().addConsumer(this::onRefreshingChanged);
-			versionModel.tableModel().selection().item().addConsumer(this::onVersionChanged);
-			installTask.active.addConsumer(this::onInstallActiveChanged);
-			installTask.downloading.addConsumer(this::onDownloadingChanged);
+			candidateModel.tableModel().selection().item().addConsumer(this::onCandidateSelected);
+			versionModel.tableModel().items().refresher().active().addConsumer(this::onRefreshing);
+			versionModel.tableModel().selection().item().addConsumer(this::onVersionSelected);
+			installTask.active.addConsumer(this::onInstalling);
+			installTask.downloading.addConsumer(this::onDownloading);
 			table = FilterTable.builder()
 							.model(versionModel.tableModel())
 							.columns(createColumns())
@@ -414,7 +426,7 @@ public final class SDKBoyPanel extends JPanel {
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
-							.columnReorderingAllowed(false)
+							.columnReordering(false)
 							.doubleClick(command(this::onVersionDoubleClick))
 							.enabled(installTask.active.not())
 							.build();
@@ -477,7 +489,7 @@ public final class SDKBoyPanel extends JPanel {
 							.build();
 			helpButton = button()
 							.control(Control.builder()
-											.command(this::toggleHelp)
+											.command(help::toggle)
 											.caption("?")
 											.mnemonic('S'))
 							.focusable(false)
@@ -507,10 +519,10 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void onVersionDoubleClick() {
-			if (versionModel.selectedUsed().get()) {
+			if (versionModel.selectedUsed().is()) {
 				uninstall();
 			}
-			else if (versionModel.selectedInstalled().get()) {
+			else if (versionModel.selectedInstalled().is()) {
 				use();
 			}
 			else {
@@ -518,15 +530,11 @@ public final class SDKBoyPanel extends JPanel {
 			}
 		}
 
-		private void toggleHelp() {
-			help.set(!help.get());
-		}
-
 		private void install() {
-			install(null);
+			install(() -> {});
 		}
 
-		private void install(Runnable onResult) {
+		private void install(Runnable onInstalled) {
 			if (confirmInstall()) {
 				ProgressWorker.builder()
 								.task(installTask)
@@ -534,12 +542,7 @@ public final class SDKBoyPanel extends JPanel {
 								.onProgress(installTask::progress)
 								.onPublish(installTask::publish)
 								.onDone(installTask::done)
-								.onResult(() -> {
-									model.refresh();
-									if (onResult != null) {
-										onResult.run();
-									}
-								})
+								.onResult(() -> installTask.result(onInstalled))
 								.execute();
 			}
 		}
@@ -589,19 +592,19 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private boolean confirmInstall() {
-			return !preferences.confirmActions.get() || showConfirmDialog(this,
+			return !preferences.confirmActions.is() || showConfirmDialog(this,
 							"Install " + versionName() + "?",
 							"Confirm install", YES_NO_OPTION) == YES_OPTION;
 		}
 
 		private boolean confirmUninstall() {
-			return !preferences.confirmActions.get() || showConfirmDialog(this,
+			return !preferences.confirmActions.is() || showConfirmDialog(this,
 							"Uninstall " + versionName() + "?",
 							"Confirm uninstall", YES_NO_OPTION) == YES_OPTION;
 		}
 
 		private boolean confirmUse() {
-			return !preferences.confirmActions.get() || showConfirmDialog(this,
+			return !preferences.confirmActions.is() || showConfirmDialog(this,
 							"Set " + versionName() + " as your global SDK?",
 							"Confirm use", YES_NO_OPTION) == YES_OPTION;
 		}
@@ -610,25 +613,25 @@ public final class SDKBoyPanel extends JPanel {
 			return selectedVersionName.get();
 		}
 
-		private void onCandidateChanged(CandidateRow candidateRow) {
+		private void onCandidateSelected(CandidateRow candidateRow) {
 			table.columnModel().visible(VersionColumn.VENDOR)
 							.set(candidateRow != null && JAVA.equals(candidateRow.candidate().name()));
 		}
 
-		private void onRefreshingChanged(boolean refreshing) {
+		private void onRefreshing(boolean refreshing) {
 			toggleSouthPanel(refreshProgress, refreshing);
 		}
 
-		private void onVersionChanged(VersionRow versionRow) {
+		private void onVersionSelected(VersionRow versionRow) {
 			selectedVersionName.set(versionRow == null ? null :
 							versionRow.candidate().name() + " " + versionRow.version().identifier());
 		}
 
-		private void onInstallActiveChanged(boolean installActive) {
-			toggleSouthPanel(installingPanel, installActive);
+		private void onInstalling(boolean installing) {
+			toggleSouthPanel(installingPanel, installing);
 		}
 
-		private void onDownloadingChanged(boolean downloading) {
+		private void onDownloading(boolean downloading) {
 			installProgress.setIndeterminate(!downloading);
 			if (downloading) {
 				cancelDownload.requestFocusInWindow();
@@ -711,6 +714,11 @@ public final class SDKBoyPanel extends JPanel {
 				filter.requestFocusInWindow();
 				downloading.set(false);
 				active.set(false);
+			}
+
+			private void result(Runnable onInstalled) {
+				model.refresh();
+				onInstalled.run();
 			}
 		}
 	}
@@ -873,8 +881,8 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void save() {
-			setConfirmActionsPreference(preferences.confirmActions.get());
-			setConfirmExitPreference(preferences.confirmExit.get());
+			setConfirmActionsPreference(preferences.confirmActions.is());
+			setConfirmExitPreference(preferences.confirmExit.is());
 			PreferencesModel.LOGGER.setLogLevel(logLevel.getOrThrow());
 			preferences.sdkManUi.zipExecutable = zipExecutable.get();
 			preferences.sdkManUi.unzipExecutable = unzipExecutable.get();

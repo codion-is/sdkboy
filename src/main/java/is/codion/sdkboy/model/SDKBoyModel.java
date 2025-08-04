@@ -19,7 +19,7 @@
 package is.codion.sdkboy.model;
 
 import is.codion.common.model.CancelException;
-import is.codion.common.observable.Observer;
+import is.codion.common.observer.Observer;
 import is.codion.common.state.ObservableState;
 import is.codion.common.state.State;
 import is.codion.common.value.Value;
@@ -199,7 +199,7 @@ public final class SDKBoyModel {
 
 			@Override
 			public boolean test(CandidateRow candidateRow) {
-				if (installedOnly.get() && candidateRow.installed() == 0) {
+				if (installedOnly.is() && candidateRow.installed() == 0) {
 					return false;
 				}
 				if (filter.isNull()) {
@@ -329,7 +329,7 @@ public final class SDKBoyModel {
 
 		private void onFilterChanged() {
 			tableModel.items().filter();
-			if (!filter.isNull() || tableModel.selection().empty().get()) {
+			if (!filter.isNull() || tableModel.selection().empty().is()) {
 				tableModel.selection().indexes().clear();
 				tableModel.selection().indexes().increment();
 			}
@@ -337,7 +337,7 @@ public final class SDKBoyModel {
 
 		private void onCandidateSelected() {
 			tableModel.items().refresh(_ -> {
-				if (tableModel.selection().empty().get()) {
+				if (tableModel.selection().empty().is()) {
 					tableModel.selection().indexes().increment();
 				}
 			});
@@ -373,10 +373,10 @@ public final class SDKBoyModel {
 		}
 
 		/**
-		 * Sort "normal" version strings correctly, that is,
+		 * Sort semantic version strings correctly, that is,
 		 * ones using the major.minor.patch-metadata format.
 		 * For other formats, textual sorting is used.
-		 * @param version the standard Version, if downloaded
+		 * @param version the semantic Version, if available
 		 * @param versionName the version name
 		 */
 		public record VersionInfo(Version version, String versionName) implements Comparable<VersionInfo> {
@@ -443,25 +443,23 @@ public final class SDKBoyModel {
 
 			@Override
 			public Collection<VersionRow> get() {
-				CandidateRow candidateRow = candidateModel.tableModel.selection().item().get();
-				if (candidateRow == null) {
-					return List.of();
-				}
+				return candidateModel.tableModel.selection().item().optional()
+								.map(this::candidateVersions)
+								.orElse(List.of());
+			}
+
+			private Collection<VersionRow> candidateVersions(CandidateRow candidateRow) {
 				try {
 					String inUse = sdkMan.resolveCurrentVersion(candidateRow.candidate().id());
 
 					return sdkMan.getVersions(candidateRow.candidate().id()).stream()
-									.map(version -> createRow(candidateRow, version, inUse))
+									.map(version -> new VersionRow(candidateRow.candidate(), version,
+													VersionInfo.of(version.version()), version.identifier().equals(inUse)))
 									.toList();
 				}
 				catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-			}
-
-			private static VersionRow createRow(CandidateRow candidateRow, CandidateVersion version, String inUse) {
-				return new VersionRow(candidateRow.candidate(), version,
-								VersionInfo.of(version.version()), version.identifier().equals(inUse));
 			}
 		}
 
@@ -470,13 +468,13 @@ public final class SDKBoyModel {
 			@Override
 			public boolean test(VersionRow versionRow) {
 				CandidateVersion candidateVersion = versionRow.version;
-				if (installedOnly.get() && !candidateVersion.installed()) {
+				if (installedOnly.is() && !candidateVersion.installed()) {
 					return false;
 				}
-				if (downloadedOnly.get() && !candidateVersion.available()) {
+				if (downloadedOnly.is() && !candidateVersion.available()) {
 					return false;
 				}
-				if (usedOnly.get() && !versionRow.used) {
+				if (usedOnly.is() && !versionRow.used) {
 					return false;
 				}
 				if (filter.isNull()) {
@@ -508,7 +506,7 @@ public final class SDKBoyModel {
 			@Override
 			public void publishProgress(int value) {
 				downloading.set(value >= 1 && value < 100);
-				if (downloading.get()) {
+				if (downloading.is()) {
 					progress.publish("Downloading");
 					progress.report(value);
 				}
