@@ -43,10 +43,14 @@ Build the default native installer(s) to `build/jpackage`
 gradlew jpackage
 ----
 
+== Graal Native
+
+The `graal` branch contains the configuration for creating a graal native executable.
+
 == Inspiration
 
 Original idea and UI design from https://github.com/jagodevreede/sdkman-ui[SDKman UI] by https://github.com/jagodevreede[Jago de Vreede].
 
 **JavaOne** presentation: https://www.youtube.com/watch?v=qUoUG8wRTDQ[Building a Multiplatform SDKMAN in JavaFX].
 
-Figured I would try to do the same using Swing, replacing the native Graal executable with a standard jlink image for simplicity.
+Figured I would try to do the same using Swing, including a standard jlink image along with a native Graal executable (see `graal` branch).
