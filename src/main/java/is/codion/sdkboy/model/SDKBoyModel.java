@@ -73,10 +73,8 @@ public final class SDKBoyModel {
 	}
 
 	public void refresh() {
-		VersionRow selected = versionModel.selected();
 		candidateModel.tableModel.items().refresh(_ ->
-						versionModel.tableModel.items().refresh(_ ->
-										versionModel.tableModel.selection().item().set(selected)));
+						versionModel.tableModel.items().refresh());
 	}
 
 	public final class CandidateModel {
