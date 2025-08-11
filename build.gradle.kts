@@ -12,7 +12,7 @@ plugins {
     // For GitHub Releases
     id("com.github.breadmoirai.github-release") version "2.5.2"
     // GraalVM Native Image support
-    id("org.graalvm.buildtools.native") version "0.10.4"
+    id("org.graalvm.buildtools.native") version "0.11.0"
 }
 
 dependencies {
