@@ -64,6 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -94,7 +95,6 @@ import static javax.swing.BorderFactory.createTitledBorder;
 import static javax.swing.JOptionPane.*;
 import static javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS;
 import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
-import static javax.swing.SwingConstants.CENTER;
 import static javax.swing.UIManager.getIcon;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import static javax.swing.event.HyperlinkEvent.EventType.ACTIVATED;
@@ -157,7 +157,7 @@ public final class SDKBoyPanel extends JPanel {
 	private void initializeUI() {
 		setBorder(emptyBorder());
 		add(candidatePanel, WEST);
-		add(versionPanel, CENTER);
+		add(versionPanel, SwingConstants.CENTER);
 	}
 
 	private void setupKeyEvents() {
@@ -230,8 +230,7 @@ public final class SDKBoyPanel extends JPanel {
 														.editable(false)
 														.lineWrap(true)
 														.wrapStyleWord(true)
-														.scrollPane()
-														.build())
+														.scrollPane())
 										.owner(this)
 										.title(candidateRow.candidate().name() + " - Description")
 										.show());
@@ -310,7 +309,7 @@ public final class SDKBoyPanel extends JPanel {
 							.cellRenderer(CandidateColumn.INSTALLED,
 											FilterTableCellRenderer.builder()
 															.columnClass(Integer.class)
-															.horizontalAlignment(CENTER)
+															.horizontalAlignment(SwingConstants.CENTER)
 															.build())
 							.build();
 			Indexes selectedIndexes = candidateModel.tableModel().selection().indexes();
@@ -340,10 +339,10 @@ public final class SDKBoyPanel extends JPanel {
 			add(scrollPane()
 							.view(table)
 							.preferredWidth(220)
-							.build(), BorderLayout.CENTER);
+							.build(), CENTER);
 			add(borderLayoutPanel()
-							.centerComponent(filter)
-							.eastComponent(installedOnly)
+							.center(filter)
+							.east(installedOnly)
 							.build(), SOUTH);
 		}
 
@@ -369,7 +368,6 @@ public final class SDKBoyPanel extends JPanel {
 		private final CandidateModel candidateModel;
 		private final VersionModel versionModel;
 		private final PreferencesModel preferences = new PreferencesModel();
-		private final State help;
 		private final InstallTask installTask;
 		private final FilterTable<VersionRow, VersionColumn> table;
 		private final Value<String> selectedVersionName = Value.nullable();
@@ -393,7 +391,6 @@ public final class SDKBoyPanel extends JPanel {
 			this.model = model;
 			this.candidateModel = model.candidateModel();
 			this.versionModel = model.versionModel();
-			this.help = help;
 			this.installTask = new InstallTask();
 			this.install = Control.builder()
 							.command(this::install)
@@ -484,8 +481,8 @@ public final class SDKBoyPanel extends JPanel {
 							.stringPainted(true)
 							.build();
 			installingPanel = borderLayoutPanel()
-							.centerComponent(installProgress)
-							.eastComponent(cancelDownload)
+							.center(installProgress)
+							.east(cancelDownload)
 							.build();
 			helpButton = button()
 							.control(Control.builder()
@@ -495,20 +492,17 @@ public final class SDKBoyPanel extends JPanel {
 							.focusable(false)
 							.build();
 			southPanel = borderLayoutPanel()
-							.centerComponent(borderLayoutPanel()
-											.centerComponent(filter)
-											.eastComponent(flexibleGridLayoutPanel(1, 0)
-															.add(installedOnly)
-															.add(downloadedOnly)
-															.add(usedOnly)
-															.add(helpButton)
-															.build())
-											.build())
+							.center(filter)
+							.east(flexibleGridLayoutPanel(1, 0)
+											.add(installedOnly)
+											.add(downloadedOnly)
+											.add(usedOnly)
+											.add(helpButton))
 							.build();
 			setBorder(createCompoundBorder(createTitledBorder("Versions"), emptyBorder()));
 			add(scrollPane()
 							.view(table)
-							.build(), BorderLayout.CENTER);
+							.build(), CENTER);
 			add(southPanel, SOUTH);
 		}
 
@@ -838,8 +832,8 @@ public final class SDKBoyPanel extends JPanel {
 							.build());
 			add(borderLayoutPanel()
 							.layout(new BorderLayout(0, 5))
-							.centerComponent(zipExecutable.component())
-							.eastComponent(browseZipExecutableButton)
+							.center(zipExecutable.component())
+							.east(browseZipExecutableButton)
 							.build());
 			add(label()
 							.text("Select unzip path")
@@ -848,8 +842,8 @@ public final class SDKBoyPanel extends JPanel {
 							.build());
 			add(borderLayoutPanel()
 							.layout(new BorderLayout(0, 5))
-							.centerComponent(unzipExecutable.component())
-							.eastComponent(browseUnzipExecutableButton)
+							.center(unzipExecutable.component())
+							.east(browseUnzipExecutableButton)
 							.build());
 			add(label()
 							.text("Select tar path")
@@ -858,8 +852,8 @@ public final class SDKBoyPanel extends JPanel {
 							.build());
 			add(borderLayoutPanel()
 							.layout(new BorderLayout(0, 5))
-							.centerComponent(tarExecutable.component())
-							.eastComponent(browseTarExecutableButton)
+							.center(tarExecutable.component())
+							.east(browseTarExecutableButton)
 							.build());
 			add(label()
 							.text("Log level")
@@ -868,12 +862,11 @@ public final class SDKBoyPanel extends JPanel {
 							.build());
 			add(borderLayoutPanel()
 							.layout(new BorderLayout(0, 5))
-							.centerComponent(logLevel.component())
-							.eastComponent(panel()
+							.center(logLevel.component())
+							.east(panel()
 											.layout(new GridLayout(1, 0, 0, 5))
 											.add(logFileButton)
-											.add(logDirectoryButton)
-											.build())
+											.add(logDirectoryButton))
 							.build());
 			add(keepDownloadsAvailable.component());
 			add(confirmActions.component());
@@ -955,15 +948,13 @@ public final class SDKBoyPanel extends JPanel {
 		private HelpPanel() {
 			super(borderLayout());
 			add(borderLayoutPanel()
-							.centerComponent(borderLayoutPanel()
+							.center(borderLayoutPanel()
 											.border(createTitledBorder("Shortcuts"))
-											.centerComponent(shortcuts)
-											.build())
-							.southComponent(borderLayoutPanel()
+											.center(shortcuts))
+							.south(borderLayoutPanel()
 											.border(createTitledBorder("About"))
-											.centerComponent(aboutPanel)
-											.build())
-							.build(), BorderLayout.CENTER);
+											.center(aboutPanel))
+							.build(), CENTER);
 		}
 
 		@Override
@@ -995,7 +986,7 @@ public final class SDKBoyPanel extends JPanel {
 				editorPane.setEditable(false);
 				editorPane.setFocusable(false);
 				editorPane.addHyperlinkListener(new OpenLink());
-				add(editorPane, BorderLayout.CENTER);
+				add(editorPane, CENTER);
 			}
 		}
 
