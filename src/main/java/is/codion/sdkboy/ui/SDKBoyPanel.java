@@ -108,7 +108,7 @@ public final class SDKBoyPanel extends JPanel {
 					Up           Previous
 					Down         Next
 					Escape       Cancel
-					Alt-E        Description
+					Alt-O        Description
 					Alt-S        Shortcuts
 					Alt-P        Preferences
 					Alt-R        Refresh
@@ -164,7 +164,7 @@ public final class SDKBoyPanel extends JPanel {
 		KeyEvents.builder()
 						.condition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
 						.modifiers(ALT_DOWN_MASK)
-						.keyCode(VK_E)
+						.keyCode(VK_O)
 						.action(command(this::displayDescription))
 						.enable(this)
 						.keyCode(VK_P)
