@@ -83,7 +83,6 @@ import static is.codion.swing.common.ui.component.Components.*;
 import static is.codion.swing.common.ui.control.Control.command;
 import static is.codion.swing.common.ui.laf.LookAndFeelProvider.findLookAndFeel;
 import static is.codion.swing.common.ui.layout.Layouts.borderLayout;
-import static is.codion.swing.common.ui.layout.Layouts.flexibleGridLayout;
 import static java.awt.BorderLayout.*;
 import static java.awt.Desktop.getDesktop;
 import static java.awt.event.KeyEvent.*;
@@ -752,7 +751,7 @@ public final class SDKBoyPanel extends JPanel {
 						.build();
 
 		private PreferencesPanel(PreferencesModel preferences) {
-			super(flexibleGridLayout(0, 1));
+			super(borderLayout());
 			this.preferences = preferences;
 			zipExecutable = stringField()
 							.value(preferences.sdkManUi.zipExecutable)
@@ -819,58 +818,46 @@ public final class SDKBoyPanel extends JPanel {
 							.value((Level) PreferencesModel.LOGGER.getLogLevel())
 							.buildValue();
 			setBorder(emptyBorder());
-			add(label()
-							.text("Look & Feel")
-							.displayedMnemonic('L')
-							.labelFor(lookAndFeelComboBox)
-							.build());
-			add(lookAndFeelComboBox);
-			add(label()
-							.text("Select zip path")
-							.displayedMnemonic('Z')
-							.labelFor(zipExecutable.component())
-							.build());
-			add(borderLayoutPanel()
-							.layout(new BorderLayout(0, 5))
-							.center(zipExecutable.component())
-							.east(browseZipExecutableButton)
-							.build());
-			add(label()
-							.text("Select unzip path")
-							.displayedMnemonic('U')
-							.labelFor(unzipExecutable.component())
-							.build());
-			add(borderLayoutPanel()
-							.layout(new BorderLayout(0, 5))
-							.center(unzipExecutable.component())
-							.east(browseUnzipExecutableButton)
-							.build());
-			add(label()
-							.text("Select tar path")
-							.displayedMnemonic('T')
-							.labelFor(tarExecutable.component())
-							.build());
-			add(borderLayoutPanel()
-							.layout(new BorderLayout(0, 5))
-							.center(tarExecutable.component())
-							.east(browseTarExecutableButton)
-							.build());
-			add(label()
-							.text("Log level")
-							.displayedMnemonic('V')
-							.labelFor(logLevel.component())
-							.build());
-			add(borderLayoutPanel()
-							.layout(new BorderLayout(0, 5))
-							.center(logLevel.component())
-							.east(panel()
-											.layout(new GridLayout(1, 0, 0, 5))
-											.add(logFileButton)
-											.add(logDirectoryButton))
-							.build());
-			add(keepDownloadsAvailable.component());
-			add(confirmActions.component());
-			add(confirmExit.component());
+			add(flexibleGridLayoutPanel(0, 1)
+							.add(label("Look & Feel")
+											.displayedMnemonic('L')
+											.labelFor(lookAndFeelComboBox))
+							.add(lookAndFeelComboBox)
+							.add(label("Select zip path")
+											.displayedMnemonic('Z')
+											.labelFor(zipExecutable.component()))
+							.add(borderLayoutPanel()
+											.layout(new BorderLayout(0, 5))
+											.center(zipExecutable.component())
+											.east(browseZipExecutableButton))
+							.add(label("Select unzip path")
+											.displayedMnemonic('U')
+											.labelFor(unzipExecutable.component()))
+							.add(borderLayoutPanel()
+											.layout(new BorderLayout(0, 5))
+											.center(unzipExecutable.component())
+											.east(browseUnzipExecutableButton))
+							.add(label("Select tar path")
+											.displayedMnemonic('T')
+											.labelFor(tarExecutable.component()))
+							.add(borderLayoutPanel()
+											.layout(new BorderLayout(0, 5))
+											.center(tarExecutable.component())
+											.east(browseTarExecutableButton))
+							.add(label("Log level")
+											.displayedMnemonic('V')
+											.labelFor(logLevel.component()))
+							.add(borderLayoutPanel()
+											.layout(new BorderLayout(0, 5))
+											.center(logLevel.component())
+											.east(panel()
+															.layout(new GridLayout(1, 0, 0, 5))
+															.add(logFileButton)
+															.add(logDirectoryButton)))
+							.add(keepDownloadsAvailable.component())
+							.add(confirmActions.component())
+							.add(confirmExit.component())
+							.build(), CENTER);
 		}
 
 		private void save() {
