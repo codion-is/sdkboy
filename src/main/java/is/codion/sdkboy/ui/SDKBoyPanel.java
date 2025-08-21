@@ -19,21 +19,18 @@
 package is.codion.sdkboy.ui;
 
 import is.codion.common.event.Event;
-import is.codion.common.logging.LoggerProxy;
-import is.codion.common.model.preferences.UserPreferences;
 import is.codion.common.model.selection.MultiSelection.Indexes;
 import is.codion.common.state.ObservableState;
 import is.codion.common.state.State;
 import is.codion.common.value.Value;
-import is.codion.plugin.flatlaf.intellij.themes.darkflat.DarkFlat;
 import is.codion.sdkboy.model.SDKBoyModel;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateColumn;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateRow;
+import is.codion.sdkboy.model.SDKBoyModel.PreferencesModel;
 import is.codion.sdkboy.model.SDKBoyModel.VersionModel;
 import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionColumn;
 import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionRow;
-import is.codion.swing.common.model.component.combobox.FilterComboBoxModel;
 import is.codion.swing.common.model.worker.ProgressWorker;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
@@ -52,7 +49,6 @@ import is.codion.swing.common.ui.laf.LookAndFeelComboBox;
 import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
 
 import ch.qos.logback.classic.Level;
-import io.github.jagodevreede.sdkman.api.SdkManUiPreferences;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -76,6 +72,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static is.codion.common.state.State.and;
+import static is.codion.sdkboy.model.SDKBoyModel.PreferencesModel.getLookAndFeelPreference;
 import static is.codion.swing.common.ui.Utilities.parentWindow;
 import static is.codion.swing.common.ui.Utilities.setClipboard;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
@@ -86,8 +83,6 @@ import static is.codion.swing.common.ui.layout.Layouts.borderLayout;
 import static java.awt.BorderLayout.*;
 import static java.awt.Desktop.getDesktop;
 import static java.awt.event.KeyEvent.*;
-import static java.lang.Boolean.TRUE;
-import static java.lang.Boolean.parseBoolean;
 import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
 import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createTitledBorder;
@@ -122,13 +117,7 @@ public final class SDKBoyPanel extends JPanel {
 					Used        :Uninstall
 					""";
 
-	private static final String LOOK_AND_FEEL_KEY =
-					SDKBoyPanel.class.getName() + ".lookAndFeel";
-	private static final String CONFIRM_ACTIONS_KEY =
-					SDKBoyPanel.class.getName() + ".confirmActions";
-	private static final String CONFIRM_EXIT_KEY =
-					SDKBoyPanel.class.getName() + ".confirmExit";
-
+	private final SDKBoyModel model = new SDKBoyModel();
 	private final CandidatePanel candidatePanel;
 	private final VersionPanel versionPanel;
 	private final State help = State.builder()
@@ -140,7 +129,6 @@ public final class SDKBoyPanel extends JPanel {
 	private SDKBoyPanel() {
 		super(borderLayout());
 		setDefaultUncaughtExceptionHandler(new SDKBoyExceptionHandler());
-		SDKBoyModel model = new SDKBoyModel();
 		versionPanel = new VersionPanel(model, help);
 		candidatePanel = new CandidatePanel(model, versionPanel.installTask.active);
 		initializeUI();
@@ -156,7 +144,7 @@ public final class SDKBoyPanel extends JPanel {
 	private void initializeUI() {
 		setBorder(emptyBorder());
 		add(candidatePanel, WEST);
-		add(versionPanel, SwingConstants.CENTER);
+		add(versionPanel, CENTER);
 	}
 
 	private void setupKeyEvents() {
@@ -209,14 +197,14 @@ public final class SDKBoyPanel extends JPanel {
 
 	private void displayPreferences() {
 		if (preferencesPanel == null) {
-			preferencesPanel = new PreferencesPanel(versionPanel.preferences);
+			preferencesPanel = new PreferencesPanel(model.preferencesModel());
 		}
 		Dialogs.okCancel()
 						.component(preferencesPanel)
 						.owner(this)
 						.title("Preferences")
-						.onOk(preferencesPanel::save)
-						.onCancel(preferencesPanel::cancel)
+						.onOk(model.preferencesModel()::save)
+						.onCancel(model.preferencesModel()::revert)
 						.show();
 	}
 
@@ -246,33 +234,9 @@ public final class SDKBoyPanel extends JPanel {
 			return false;
 		}
 
-		return !versionPanel.preferences.confirmExit.is() || showConfirmDialog(this,
+		return !model.preferencesModel().confirmExit().is() || showConfirmDialog(this,
 						"Are you sure you want to exit?",
 						"Confirm Exit", YES_NO_OPTION, QUESTION_MESSAGE) == YES_OPTION;
-	}
-
-	private static void setConfirmActionsPreference(boolean confirmActions) {
-		UserPreferences.set(CONFIRM_ACTIONS_KEY, Boolean.toString(confirmActions));
-	}
-
-	private static boolean getConfirmActionsPreference() {
-		return parseBoolean(UserPreferences.get(CONFIRM_ACTIONS_KEY, TRUE.toString()));
-	}
-
-	private static void setConfirmExitPreference(boolean confirmExit) {
-		UserPreferences.set(CONFIRM_EXIT_KEY, Boolean.toString(confirmExit));
-	}
-
-	private static boolean getConfirmExitPreference() {
-		return parseBoolean(UserPreferences.get(CONFIRM_EXIT_KEY, TRUE.toString()));
-	}
-
-	private static void setLookAndFeelPreference(LookAndFeelEnabler lookAndFeelEnabler) {
-		UserPreferences.set(LOOK_AND_FEEL_KEY, lookAndFeelEnabler.lookAndFeel().getClass().getName());
-	}
-
-	private static String getLookAndFeelPreference() {
-		return UserPreferences.get(LOOK_AND_FEEL_KEY, DarkFlat.class.getName());
 	}
 
 	private final class SDKBoyExceptionHandler implements Thread.UncaughtExceptionHandler {
@@ -299,7 +263,7 @@ public final class SDKBoyPanel extends JPanel {
 							.tableModel().items().refresher().active();
 			table = FilterTable.builder()
 							.model(candidateModel.tableModel())
-							.columns(createColumns())
+							.columns(this::configureColumns)
 							.sortable(false)
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
@@ -345,17 +309,10 @@ public final class SDKBoyPanel extends JPanel {
 							.build(), SOUTH);
 		}
 
-		private List<FilterTableColumn<CandidateColumn>> createColumns() {
-			return List.of(
-							FilterTableColumn.builder()
-											.identifier(CandidateColumn.NAME)
-											.headerValue("Name")
-											.build(),
-							FilterTableColumn.builder()
-											.identifier(CandidateColumn.INSTALLED)
-											.headerValue("Installed")
-											.fixedWidth(80)
-											.build());
+		private void configureColumns(FilterTableColumn.Builder<CandidateColumn> column) {
+			if (column.identifier() == CandidateColumn.INSTALLED) {
+				column.fixedWidth(80);
+			}
 		}
 	}
 
@@ -366,7 +323,6 @@ public final class SDKBoyPanel extends JPanel {
 		private final SDKBoyModel model;
 		private final CandidateModel candidateModel;
 		private final VersionModel versionModel;
-		private final PreferencesModel preferences = new PreferencesModel();
 		private final InstallTask installTask;
 		private final FilterTable<VersionRow, VersionColumn> table;
 		private final Value<String> selectedVersionName = Value.nullable();
@@ -417,7 +373,7 @@ public final class SDKBoyPanel extends JPanel {
 			installTask.downloading.addConsumer(this::onDownloading);
 			table = FilterTable.builder()
 							.model(versionModel.tableModel())
-							.columns(createColumns())
+							.columns(this::configureColumns)
 							.sortable(false)
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
@@ -585,19 +541,19 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private boolean confirmInstall() {
-			return !preferences.confirmActions.is() || showConfirmDialog(this,
+			return !model.preferencesModel().confirmActions().is() || showConfirmDialog(this,
 							"Install " + versionName() + "?",
 							"Confirm install", YES_NO_OPTION) == YES_OPTION;
 		}
 
 		private boolean confirmUninstall() {
-			return !preferences.confirmActions.is() || showConfirmDialog(this,
+			return !model.preferencesModel().confirmActions().is() || showConfirmDialog(this,
 							"Uninstall " + versionName() + "?",
 							"Confirm uninstall", YES_NO_OPTION) == YES_OPTION;
 		}
 
 		private boolean confirmUse() {
-			return !preferences.confirmActions.is() || showConfirmDialog(this,
+			return !model.preferencesModel().confirmActions().is() || showConfirmDialog(this,
 							"Set " + versionName() + " as your global SDK?",
 							"Confirm use", YES_NO_OPTION) == YES_OPTION;
 		}
@@ -646,31 +602,12 @@ public final class SDKBoyPanel extends JPanel {
 			repaint();
 		}
 
-		private List<FilterTableColumn<VersionColumn>> createColumns() {
-			return List.of(
-							FilterTableColumn.builder()
-											.identifier(VersionColumn.VENDOR)
-											.headerValue("Vendor")
-											.build(),
-							FilterTableColumn.builder()
-											.identifier(VersionColumn.VERSION)
-											.headerValue("Version")
-											.build(),
-							FilterTableColumn.builder()
-											.identifier(VersionColumn.INSTALLED)
-											.headerValue("Installed")
-											.fixedWidth(80)
-											.build(),
-							FilterTableColumn.builder()
-											.identifier(VersionColumn.DOWNLOADED)
-											.headerValue("Downloaded")
-											.fixedWidth(90)
-											.build(),
-							FilterTableColumn.builder()
-											.identifier(VersionColumn.USED)
-											.headerValue("Used")
-											.fixedWidth(60)
-											.build());
+		private void configureColumns(FilterTableColumn.Builder<VersionColumn> column) {
+			switch (column.identifier()) {
+				case INSTALLED -> column.fixedWidth(80);
+				case DOWNLOADED -> column.fixedWidth(90);
+				case USED -> column.fixedWidth(60);
+			}
 		}
 
 		private final class InstallTask implements ProgressTask<String> {
@@ -716,55 +653,41 @@ public final class SDKBoyPanel extends JPanel {
 		}
 	}
 
-	private static final class PreferencesModel {
-
-		private static final LoggerProxy LOGGER = LoggerProxy.instance();
-
-		private final SdkManUiPreferences sdkManUi = SdkManUiPreferences.getInstance();
-		private final State confirmActions = State.state(getConfirmActionsPreference());
-		private final State confirmExit = State.state(getConfirmExitPreference());
-		private final FilterComboBoxModel<Level> logLevels = FilterComboBoxModel.builder()
-						.items(LOGGER.levels().stream()
-										.map(Level.class::cast)
-										.toList())
-						.build();
-	}
-
 	private static final class PreferencesPanel extends JPanel {
 
-		private final SDKBoyPanel.PreferencesModel preferences;
-
-		private final ComponentValue<String, JTextField> zipExecutable;
-		private final ComponentValue<String, JTextField> unzipExecutable;
-		private final ComponentValue<String, JTextField> tarExecutable;
-		private final ComponentValue<Boolean, JCheckBox> keepDownloadsAvailable;
-		private final ComponentValue<Boolean, JCheckBox> confirmActions;
-		private final ComponentValue<Boolean, JCheckBox> confirmExit;
-		private final ComponentValue<Level, JComboBox<Level>> logLevel;
+		private final PreferencesModel preferences;
+		private final LookAndFeelComboBox lookAndFeelComboBox;
+		private final ComponentValue<JTextField, String> zipExecutable;
+		private final ComponentValue<JTextField, String> unzipExecutable;
+		private final ComponentValue<JTextField, String> tarExecutable;
+		private final ComponentValue<JCheckBox, Boolean> keepDownloadsAvailable;
+		private final ComponentValue<JCheckBox, Boolean> confirmActions;
+		private final ComponentValue<JCheckBox, Boolean> confirmExit;
+		private final ComponentValue<JComboBox<Level>, Level> logLevel;
 		private final JButton browseZipExecutableButton;
 		private final JButton browseUnzipExecutableButton;
 		private final JButton browseTarExecutableButton;
 		private final JButton logFileButton;
 		private final JButton logDirectoryButton;
-		private final LookAndFeelComboBox lookAndFeelComboBox = LookAndFeelComboBox.builder()
-						.onSelection(SDKBoyPanel::setLookAndFeelPreference)
-						.build();
 
 		private PreferencesPanel(PreferencesModel preferences) {
 			super(borderLayout());
 			this.preferences = preferences;
+			lookAndFeelComboBox = LookAndFeelComboBox.builder()
+							.onSelection(preferences::setLookAndFeelPreference)
+							.build();
 			zipExecutable = stringField()
-							.value(preferences.sdkManUi.zipExecutable)
+							.link(preferences.zipExecutable())
 							.columns(20)
 							.selectAllOnFocusGained(true)
 							.buildValue();
 			unzipExecutable = stringField()
-							.value(preferences.sdkManUi.unzipExecutable)
+							.link(preferences.unzipExecutable())
 							.columns(20)
 							.selectAllOnFocusGained(true)
 							.buildValue();
 			tarExecutable = stringField()
-							.value(preferences.sdkManUi.tarExecutable)
+							.link(preferences.tarExecutable())
 							.columns(20)
 							.selectAllOnFocusGained(true)
 							.buildValue();
@@ -799,23 +722,23 @@ public final class SDKBoyPanel extends JPanel {
 											.description("Open Log Directory (Alt-D)"))
 							.build();
 			keepDownloadsAvailable = checkBox()
-							.value(preferences.sdkManUi.keepDownloadsAvailable)
+							.link(preferences.keepDownloadsAvailable())
 							.text("Keep downloads available")
 							.mnemonic('K')
 							.buildValue();
 			confirmActions = checkBox()
-							.link(preferences.confirmActions)
+							.link(preferences.confirmActions())
 							.text("Confirm install, uninstall and use")
 							.mnemonic('I')
 							.buildValue();
 			confirmExit = checkBox()
-							.link(preferences.confirmExit)
+							.link(preferences.confirmExit())
 							.text("Confirm exit")
 							.mnemonic('X')
 							.buildValue();
-			logLevel = Components.comboBox()
-							.model(preferences.logLevels)
-							.value((Level) PreferencesModel.LOGGER.getLogLevel())
+			logLevel = comboBox()
+							.model(preferences.logLevels())
+							.value((Level) preferences.logLevel())
 							.buildValue();
 			setBorder(emptyBorder());
 			add(flexibleGridLayoutPanel(0, 1)
@@ -860,46 +783,12 @@ public final class SDKBoyPanel extends JPanel {
 							.build(), CENTER);
 		}
 
-		private void save() {
-			setConfirmActionsPreference(preferences.confirmActions.is());
-			setConfirmExitPreference(preferences.confirmExit.is());
-			PreferencesModel.LOGGER.setLogLevel(logLevel.getOrThrow());
-			preferences.sdkManUi.zipExecutable = zipExecutable.get();
-			preferences.sdkManUi.unzipExecutable = unzipExecutable.get();
-			preferences.sdkManUi.tarExecutable = tarExecutable.get();
-			preferences.sdkManUi.keepDownloadsAvailable = keepDownloadsAvailable.getOrThrow();
-			try {
-				UserPreferences.flush();
-				preferences.sdkManUi.save();
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		private void cancel() {
-			preferences.confirmActions.set(getConfirmActionsPreference());
-			preferences.confirmExit.set(getConfirmExitPreference());
-			logLevel.set((Level) PreferencesModel.LOGGER.getLogLevel());
-			zipExecutable.set(preferences.sdkManUi.zipExecutable);
-			unzipExecutable.set(preferences.sdkManUi.unzipExecutable);
-			tarExecutable.set(preferences.sdkManUi.tarExecutable);
-			keepDownloadsAvailable.set(preferences.sdkManUi.keepDownloadsAvailable);
-		}
-
 		private void openLogFile() {
-			PreferencesModel.LOGGER.files().stream()
-							.map(File::new)
-							.findFirst()
-							.ifPresent(this::open);
+			preferences.logFile().ifPresent(this::open);
 		}
 
 		private void openLogDirectory() {
-			PreferencesModel.LOGGER.files().stream()
-							.map(File::new)
-							.map(File::getParentFile)
-							.findFirst()
-							.ifPresent(this::open);
+			preferences.logDirectory().ifPresent(this::open);
 		}
 
 		private void open(File file) {
@@ -998,7 +887,6 @@ public final class SDKBoyPanel extends JPanel {
 			throwable.printStackTrace();
 			Dialogs.exception().show(throwable);
 		});
-
 		findLookAndFeel(getLookAndFeelPreference())
 						.ifPresent(LookAndFeelEnabler::enable);
 
