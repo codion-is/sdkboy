@@ -18,34 +18,44 @@
  */
 package is.codion.sdkboy.model;
 
+import is.codion.common.logging.LoggerProxy;
 import is.codion.common.model.CancelException;
+import is.codion.common.model.preferences.UserPreferences;
 import is.codion.common.observer.Observer;
 import is.codion.common.state.ObservableState;
 import is.codion.common.state.State;
 import is.codion.common.value.Value;
 import is.codion.common.version.Version;
+import is.codion.plugin.flatlaf.intellij.themes.darkflat.DarkFlat;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateRow;
-import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionRow;
+import is.codion.swing.common.model.component.combobox.FilterComboBoxModel;
 import is.codion.swing.common.model.component.table.FilterTableModel;
 import is.codion.swing.common.model.component.table.FilterTableModel.TableColumns;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
+import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
 
+import ch.qos.logback.classic.Level;
 import io.github.jagodevreede.sdkman.api.ProgressInformation;
 import io.github.jagodevreede.sdkman.api.SdkManApi;
+import io.github.jagodevreede.sdkman.api.SdkManUiPreferences;
 import io.github.jagodevreede.sdkman.api.domain.Candidate;
 import io.github.jagodevreede.sdkman.api.domain.CandidateVersion;
 import io.github.jagodevreede.sdkman.api.http.DownloadTask;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static io.github.jagodevreede.sdkman.api.SdkManApi.DEFAULT_SDKMAN_HOME;
+import static java.lang.Boolean.TRUE;
+import static java.lang.Boolean.parseBoolean;
 import static javax.swing.SortOrder.ASCENDING;
 import static javax.swing.SortOrder.DESCENDING;
 
@@ -58,10 +68,12 @@ public final class SDKBoyModel {
 
 	private final CandidateModel candidateModel;
 	private final VersionModel versionModel;
+	private final PreferencesModel preferencesModel;
 
 	public SDKBoyModel() {
 		candidateModel = new CandidateModel();
 		versionModel = new VersionModel();
+		preferencesModel = new PreferencesModel();
 	}
 
 	public CandidateModel candidateModel() {
@@ -70,6 +82,10 @@ public final class SDKBoyModel {
 
 	public VersionModel versionModel() {
 		return versionModel;
+	}
+
+	public PreferencesModel preferencesModel() {
+		return preferencesModel;
 	}
 
 	public void refresh() {
@@ -82,7 +98,7 @@ public final class SDKBoyModel {
 		private final FilterTableModel<CandidateRow, CandidateColumn> tableModel =
 						FilterTableModel.builder()
 										.columns(new CandidateTableColumns())
-										.supplier(new CandidateSupplier())
+										.items(new CandidateItems())
 										.visible(new CandidateVisible())
 										.build();
 		private final Value<String> filter = Value.builder()
@@ -160,6 +176,14 @@ public final class SDKBoyModel {
 			}
 
 			@Override
+			public String caption(CandidateColumn column) {
+				return switch (column) {
+					case NAME -> "Name";
+					case INSTALLED -> "Installed";
+				};
+			}
+
+			@Override
 			public Object value(CandidateRow row, CandidateColumn column) {
 				return switch (column) {
 					case NAME -> row.candidate.name();
@@ -177,7 +201,7 @@ public final class SDKBoyModel {
 			}
 		}
 
-		private class CandidateSupplier implements Supplier<Collection<CandidateRow>> {
+		private class CandidateItems implements Supplier<Collection<CandidateRow>> {
 
 			@Override
 			public Collection<CandidateRow> get() {
@@ -216,7 +240,7 @@ public final class SDKBoyModel {
 		private final FilterTableModel<VersionRow, VersionColumn> tableModel =
 						FilterTableModel.builder()
 										.columns(new VersionTableColumns())
-										.supplier(new VersionSupplier())
+										.items(new VersionItems())
 										.visible(new VersionVisible())
 										.build();
 		private final State selectedInstalled = State.state();
@@ -250,8 +274,8 @@ public final class SDKBoyModel {
 			return selectedInstalled.observable();
 		}
 
-		public State selectedUsed() {
-			return selectedUsed;
+		public ObservableState selectedUsed() {
+			return selectedUsed.observable();
 		}
 
 		public Value<String> filter() {
@@ -426,6 +450,17 @@ public final class SDKBoyModel {
 			}
 
 			@Override
+			public String caption(VersionColumn column) {
+				return switch (column) {
+					case VENDOR -> "Vendor";
+					case VERSION -> "Version";
+					case INSTALLED -> "Installed";
+					case DOWNLOADED -> "Downloaded";
+					case USED -> "Used";
+				};
+			}
+
+			@Override
 			public Object value(VersionRow row, VersionColumn column) {
 				return switch (column) {
 					case VENDOR -> row.version.vendor();
@@ -437,7 +472,7 @@ public final class SDKBoyModel {
 			}
 		}
 
-		private class VersionSupplier implements Supplier<Collection<VersionRow>> {
+		private class VersionItems implements Supplier<Collection<VersionRow>> {
 
 			@Override
 			public Collection<VersionRow> get() {
@@ -515,6 +550,117 @@ public final class SDKBoyModel {
 
 			@Override
 			public void publishState(String state) {}
+		}
+	}
+
+	public static final class PreferencesModel {
+
+		private static final String LOOK_AND_FEEL = "SDKBOY.lookAndFeel";
+		private static final String CONFIRM_ACTIONS = "SDKBOY.confirmActions";
+		private static final String CONFIRM_EXIT = "SDKBOY.confirmExit";
+
+		private final LoggerProxy logger = LoggerProxy.instance();
+		private final SdkManUiPreferences sdkManUi = SdkManUiPreferences.getInstance();
+		private final Value<String> zipExecutable = Value.nullable(sdkManUi.zipExecutable);
+		private final Value<String> unzipExecutable = Value.nullable(sdkManUi.unzipExecutable);
+		private final Value<String> tarExecutable = Value.nullable(sdkManUi.tarExecutable);
+		private final State keepDownloadsAvailable = State.state(sdkManUi.keepDownloadsAvailable);
+		private final State confirmActions = State.state(getConfirmActionsPreference());
+		private final State confirmExit = State.state(getConfirmExitPreference());
+		private final FilterComboBoxModel<Level> logLevels = FilterComboBoxModel.builder()
+						.items(logger.levels().stream()
+										.map(Level.class::cast)
+										.toList())
+						.build();
+
+		private PreferencesModel() {}
+
+		public Value<String> zipExecutable() {
+			return zipExecutable;
+		}
+
+		public Value<String> unzipExecutable() {
+			return unzipExecutable;
+		}
+
+		public Value<String> tarExecutable() {
+			return tarExecutable;
+		}
+
+		public State keepDownloadsAvailable() {
+			return keepDownloadsAvailable;
+		}
+
+		public State confirmActions() {
+			return confirmActions;
+		}
+
+		public State confirmExit() {
+			return confirmExit;
+		}
+
+		public FilterComboBoxModel<Level> logLevels() {
+			return logLevels;
+		}
+
+		public Object logLevel() {
+			return logger.getLogLevel();
+		}
+
+		public Optional<File> logFile() {
+			return logger.files().stream()
+							.map(File::new)
+							.findFirst();
+		}
+
+		public Optional<File> logDirectory() {
+			return logger.files().stream()
+							.map(File::new)
+							.map(File::getParentFile)
+							.findFirst();
+		}
+
+		public void setLookAndFeelPreference(LookAndFeelEnabler lookAndFeelEnabler) {
+			UserPreferences.set(LOOK_AND_FEEL, lookAndFeelEnabler.lookAndFeel().getClass().getName());
+		}
+
+		public static String getLookAndFeelPreference() {
+			return UserPreferences.get(LOOK_AND_FEEL, DarkFlat.class.getName());
+		}
+
+		public void save() {
+			UserPreferences.set(CONFIRM_ACTIONS, Boolean.toString(confirmActions.is()));
+			UserPreferences.set(CONFIRM_EXIT, Boolean.toString(confirmExit.is()));
+			logger.setLogLevel(logLevels.selection().item().getOrThrow());
+			sdkManUi.zipExecutable = zipExecutable.get();
+			sdkManUi.unzipExecutable = unzipExecutable.get();
+			sdkManUi.tarExecutable = tarExecutable.get();
+			sdkManUi.keepDownloadsAvailable = keepDownloadsAvailable.is();
+			try {
+				UserPreferences.flush();
+				sdkManUi.save();
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		public void revert() {
+			confirmActions.set(getConfirmActionsPreference());
+			confirmExit.set(getConfirmExitPreference());
+			logLevels.selection().item().set((Level) logger.getLogLevel());
+			zipExecutable.set(sdkManUi.zipExecutable);
+			unzipExecutable.set(sdkManUi.unzipExecutable);
+			tarExecutable.set(sdkManUi.tarExecutable);
+			keepDownloadsAvailable.set(sdkManUi.keepDownloadsAvailable);
+		}
+
+		private static boolean getConfirmActionsPreference() {
+			return parseBoolean(UserPreferences.get(CONFIRM_ACTIONS, TRUE.toString()));
+		}
+
+		private static boolean getConfirmExitPreference() {
+			return parseBoolean(UserPreferences.get(CONFIRM_EXIT, TRUE.toString()));
 		}
 	}
 }

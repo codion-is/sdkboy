@@ -139,6 +139,7 @@ SDKBOY is designed for efficient keyboard operation:
 |===
 |Shortcut |Action
 
+|`Alt+O` |Display candidate description
 |`Alt+R` |Refresh candidates and versions
 |`Alt+P` |Open preferences
 |`Alt+S` |Toggle shortcut panel
@@ -169,7 +170,7 @@ SDKBOY is designed for efficient keyboard operation:
 |`Down` |Next item (wraps to top)
 |===
 
-NOTE: Selection starts empty. Press `Down` to select the first item or `Up` to select the last item.
+NOTE: Candidate selection starts empty. Press `Down` to select the first item or `Up` to select the last item.
 
 === Version Management
 
@@ -330,12 +331,6 @@ SDKBOY supports all SDKs available through SDKMAN!, including but not limited to
 **Installed Versions**: `~/.sdkman/candidates/<candidate>/<version>/`
 
 **Configuration**: `~/.sdkman/etc/config`
-
-=== Version History
-
-This manual corresponds to SDKBOY version 1.0.
-
-For the latest updates and changes, visit the project repository.
 
 '''
 
