@@ -99,7 +99,7 @@ public final class SDKBoyModel {
 						FilterTableModel.builder()
 										.columns(new CandidateTableColumns())
 										.items(new CandidateItems())
-										.visible(new CandidateVisible())
+										.included(new CandidateIncluded())
 										.build();
 		private final Value<String> filter = Value.builder()
 						.<String>nullable()
@@ -217,7 +217,7 @@ public final class SDKBoyModel {
 			}
 		}
 
-		private final class CandidateVisible implements Predicate<CandidateRow> {
+		private final class CandidateIncluded implements Predicate<CandidateRow> {
 
 			@Override
 			public boolean test(CandidateRow candidateRow) {
@@ -241,7 +241,7 @@ public final class SDKBoyModel {
 						FilterTableModel.builder()
 										.columns(new VersionTableColumns())
 										.items(new VersionItems())
-										.visible(new VersionVisible())
+										.included(new VersionIncluded())
 										.build();
 		private final State selectedInstalled = State.state();
 		private final State selectedUsed = State.state();
@@ -496,7 +496,7 @@ public final class SDKBoyModel {
 			}
 		}
 
-		private final class VersionVisible implements Predicate<VersionRow> {
+		private final class VersionIncluded implements Predicate<VersionRow> {
 
 			@Override
 			public boolean test(VersionRow versionRow) {
