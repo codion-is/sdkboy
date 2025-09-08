@@ -149,10 +149,10 @@ jlink {
 tasks.register<Zip>("nativeImageZip") {
     group = "distribution"
     description = "Creates a zip of the native image"
-    
+
     // Set the archive name with architecture and -native suffix
     val osName = OperatingSystem.current().familyName.replace(" ", "").lowercase()
-    val arch = System.getProperty("os.arch").let { 
+    val arch = System.getProperty("os.arch").let {
         when (it) {
             "x86_64", "amd64" -> "x86_64"
             "aarch64", "arm64" -> "aarch64"
@@ -161,7 +161,7 @@ tasks.register<Zip>("nativeImageZip") {
     }
     archiveFileName.set(project.name + "-" + project.version + "-" + osName + "_" + arch + "-native.zip")
     destinationDirectory.set(layout.buildDirectory)
-    
+
     // Include the native executable and required libraries
     from(layout.buildDirectory.dir("native/nativeCompile")) {
         val os = OperatingSystem.current()
@@ -197,16 +197,6 @@ tasks.named("githubRelease") {
     dependsOn(tasks.named("nativeImageZip"))
 }
 
-tasks.register<Sync>("copyToGitHubPages") {
-    group = "documentation"
-    description = "Copies the documentation to the Codion github pages repository, nevermind"
-    from(tasks.asciidoctor)
-    into(
-        "../codion-pages/doc/" + libs.versions.codion.get()
-            .replace("-SNAPSHOT", "") + "/tutorials/sdkboy"
-    )
-}
-
 // GraalVM Native Image configuration
 graalvmNative {
     binaries {
@@ -215,13 +205,13 @@ graalvmNative {
             mainClass = "is.codion.sdkboy.NativeMain"
             verbose = true
             fallback = false
-            
+
             buildArgs.add("--no-fallback")
             buildArgs.add("-H:+ReportExceptionStackTraces")
             buildArgs.add("-Djava.awt.headless=false")
             buildArgs.add("-Djava.home=${System.getProperty("java.home")}")
             buildArgs.add("--initialize-at-run-time=sun.awt,com.sun.jna,sun.java2d,sun.font,java.awt.Toolkit,sun.awt.AWTAccessor")
-            
+
             // Windows-specific AWT support
             if (OperatingSystem.current().isWindows) {
                 buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
@@ -235,28 +225,28 @@ graalvmNative {
             }
             buildArgs.add("-H:+AddAllCharsets")
             buildArgs.add("-H:+IncludeAllLocales")
-            
+
             // Enable AWT/Swing support
             buildArgs.add("-H:+EnableAllSecurityServices")
-            
+
             // JNI support for native libraries
             buildArgs.add("-H:+JNI")
             buildArgs.add("-H:+ForeignAPISupport")
             buildArgs.add("-H:ConfigurationFileDirectories=${projectDir}/src/main/resources/META-INF/native-image/is.codion.sdkboy")
-            
+
             // Resource configuration
             buildArgs.add("-H:IncludeResources=.*\\.(properties|xml|png|ico|icns)$")
             buildArgs.add("-H:IncludeResources=logback.xml")
             buildArgs.add("-H:IncludeResources=version.properties")
-            
+
             // Module support
             buildArgs.add("--add-modules=ALL-MODULE-PATH")
-            
+
             // Memory settings for build
             jvmArgs.add("-Xmx7G")
         }
     }
-    
+
     agent {
         defaultMode = "standard"
         builtinCallerFilter = true
