@@ -35,7 +35,6 @@ import is.codion.swing.common.model.worker.ProgressWorker;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
 import is.codion.swing.common.ui.Utilities;
-import is.codion.swing.common.ui.component.Components;
 import is.codion.swing.common.ui.component.table.FilterTable;
 import is.codion.swing.common.ui.component.table.FilterTableCellRenderer;
 import is.codion.swing.common.ui.component.table.FilterTableColumn;
@@ -268,6 +267,7 @@ public final class SDKBoyPanel extends JPanel {
 							.focusable(false)
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
+							.columnReordering(false)
 							.enabled(and(installing.not(), refreshingVersions.not()))
 							.cellRenderer(CandidateColumn.INSTALLED,
 											FilterTableCellRenderer.builder()
@@ -297,7 +297,6 @@ public final class SDKBoyPanel extends JPanel {
 							.focusable(false)
 							.enabled(installing.not())
 							.build();
-			candidateModel.tableModel().items().refresh();
 			setBorder(createCompoundBorder(createTitledBorder("Candidates"), emptyBorder()));
 			add(scrollPane()
 							.view(table)
