@@ -1098,6 +1098,42 @@
       ]
     },
     {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.catppuccin.CatppuccinFrappe",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.catppuccin.CatppuccinLatte",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.catppuccin.CatppuccinMacchiato",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.catppuccin.CatppuccinMocha",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "is.codion.plugin.flatlaf.intellij.themes.cobalt2.Cobalt2",
       "methods": [
         {
@@ -1468,6 +1504,15 @@
     },
     {
       "type": "is.codion.plugin.flatlaf.intellij.themes.gruvbox.GruvboxMaterialLightSoft",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.halcyon.Halcyon",
       "methods": [
         {
           "name": "<init>",
@@ -1927,6 +1972,33 @@
     },
     {
       "type": "is.codion.plugin.flatlaf.intellij.themes.trashpanda.TrashPandaStarlight",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.vscode.VSCodeDark",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.vscode.VSCodeDarkModern",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.intellij.themes.vscode.VSCodeLight",
       "methods": [
         {
           "name": "<init>",
