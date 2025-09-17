@@ -111,6 +111,7 @@ public final class SDKBoyModel {
 
 		private CandidateModel() {
 			tableModel.sort().order(CandidateColumn.NAME).set(ASCENDING);
+			tableModel.items().refresh();
 		}
 
 		public FilterTableModel<CandidateRow, CandidateColumn> tableModel() {
