@@ -57,6 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -72,8 +73,7 @@ import java.util.List;
 
 import static is.codion.common.state.State.and;
 import static is.codion.sdkboy.model.SDKBoyModel.PreferencesModel.getLookAndFeelPreference;
-import static is.codion.swing.common.ui.Utilities.parentWindow;
-import static is.codion.swing.common.ui.Utilities.setClipboard;
+import static is.codion.swing.common.ui.Utilities.*;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
 import static is.codion.swing.common.ui.component.Components.*;
 import static is.codion.swing.common.ui.control.Control.command;
@@ -96,24 +96,24 @@ import static javax.swing.event.HyperlinkEvent.EventType.ACTIVATED;
 public final class SDKBoyPanel extends JPanel {
 
 	private static final String SHORTCUTS = """
-					Alt          Mnemonics
-					Enter        Navigate
-					Up           Previous
-					Down         Next
-					Escape       Cancel
-					Alt-O        Description
-					Alt-S        Shortcuts
-					Alt-P        Preferences
-					Alt-R        Refresh
-					Alt-X        Exit
-					Alt-I/Ins    Install
-					Alt-D/Del    Uninstall
-					Alt-U        Use
-					Alt-C        Copy USE Command
-					Double Click Version
-					Uninstalled :Install
-					Installed   :Use
-					Used        :Uninstall
+					Alt           Mnemonics
+					Enter         Navigate
+					Up/PageUp     Previous
+					Down/PageDown Next
+					Escape        Cancel
+					Alt-O         Description
+					Alt-S         Shortcuts
+					Alt-P         Preferences
+					Alt-R         Refresh
+					Alt-X         Exit
+					Alt-I/Ins     Install
+					Alt-D/Del     Uninstall
+					Alt-U         Use
+					Alt-C         Copy USE Command
+					Double Click  Version
+					Uninstalled  :Install
+					Installed    :Use
+					Used         :Uninstall
 					""";
 
 	private final SDKBoyModel model = new SDKBoyModel();
@@ -238,6 +238,22 @@ public final class SDKBoyPanel extends JPanel {
 						"Confirm Exit", YES_NO_OPTION, QUESTION_MESSAGE) == YES_OPTION;
 	}
 
+	private static Control pageDownControl(FilterTable<?, ?> table) {
+		return Control.command(() -> {
+			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
+			table.model().selection().index().map(index ->
+							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
+		});
+	}
+
+	private static Control pageUpControl(FilterTable<?, ?> table) {
+		return Control.command(() -> {
+			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
+			table.model().selection().index().map(index ->
+							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
+		});
+	}
+
 	private final class SDKBoyExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 		@Override
@@ -288,6 +304,12 @@ public final class SDKBoyPanel extends JPanel {
 							.keyEvent(KeyEvents.builder()
 											.keyCode(VK_DOWN)
 											.action(command(selectedIndexes::increment)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_PAGE_UP)
+											.action(pageUpControl(table)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_PAGE_DOWN)
+											.action(pageDownControl(table)))
 							.enabled(installing.not())
 							.build();
 			installedOnly = checkBox()
@@ -395,6 +417,12 @@ public final class SDKBoyPanel extends JPanel {
 							.keyEvent(KeyEvents.builder()
 											.keyCode(VK_DOWN)
 											.action(command(selectedIndexes::increment)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_PAGE_UP)
+											.action(pageUpControl(table)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_PAGE_DOWN)
+											.action(pageDownControl(table)))
 							.enabled(installTask.active.not())
 							.build();
 			installedOnly = checkBox()
