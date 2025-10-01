@@ -110,7 +110,7 @@ public final class SDKBoyPanel extends JPanel {
 					Alt-D/Del     Uninstall
 					Alt-U         Use
 					Alt-C         Copy USE Command
-					Double Click  Version
+					Double Click Version
 					Uninstalled  :Install
 					Installed    :Use
 					Used         :Uninstall
@@ -238,6 +238,31 @@ public final class SDKBoyPanel extends JPanel {
 						"Confirm Exit", YES_NO_OPTION, QUESTION_MESSAGE) == YES_OPTION;
 	}
 
+	private static JTextField createFilterField(Value<String> filter, FilterTable<?, ?> table, ObservableState installing) {
+		Indexes selectedIndexes = table.model().selection().indexes();
+
+		return stringField()
+							.link(filter)
+							.hint("Filter...")
+							.lowerCase(true)
+							.selectAllOnFocusGained(true)
+							.transferFocusOnEnter(true)
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_UP)
+											.action(command(selectedIndexes::decrement)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_DOWN)
+											.action(command(selectedIndexes::increment)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_PAGE_UP)
+											.action(pageUpControl(table)))
+							.keyEvent(KeyEvents.builder()
+											.keyCode(VK_PAGE_DOWN)
+											.action(pageDownControl(table)))
+							.enabled(installing.not())
+							.build();
+	}
+
 	private static Control pageDownControl(FilterTable<?, ?> table) {
 		return Control.command(() -> {
 			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
@@ -291,27 +316,7 @@ public final class SDKBoyPanel extends JPanel {
 															.horizontalAlignment(SwingConstants.CENTER)
 															.build())
 							.build();
-			Indexes selectedIndexes = candidateModel.tableModel().selection().indexes();
-			filter = stringField()
-							.link(candidateModel.filter())
-							.hint("Filter...")
-							.lowerCase(true)
-							.selectAllOnFocusGained(true)
-							.transferFocusOnEnter(true)
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_UP)
-											.action(command(selectedIndexes::decrement)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_DOWN)
-											.action(command(selectedIndexes::increment)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_PAGE_UP)
-											.action(pageUpControl(table)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_PAGE_DOWN)
-											.action(pageDownControl(table)))
-							.enabled(installing.not())
-							.build();
+			filter = createFilterField(candidateModel.filter(), table, installing);
 			installedOnly = checkBox()
 							.link(candidateModel.installedOnly())
 							.text("Installed")
@@ -400,31 +405,11 @@ public final class SDKBoyPanel extends JPanel {
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
 							.columnReordering(false)
+							.hiddenColumns(VersionColumn.VENDOR)
 							.doubleClick(command(this::onVersionDoubleClick))
 							.enabled(installTask.active.not())
 							.build();
-			table.columnModel().visible(VersionColumn.VENDOR).set(false);
-			Indexes selectedIndexes = versionModel.tableModel().selection().indexes();
-			filter = stringField()
-							.link(versionModel.filter())
-							.hint("Filter...")
-							.lowerCase(true)
-							.selectAllOnFocusGained(true)
-							.transferFocusOnEnter(true)
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_UP)
-											.action(command(selectedIndexes::decrement)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_DOWN)
-											.action(command(selectedIndexes::increment)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_PAGE_UP)
-											.action(pageUpControl(table)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_PAGE_DOWN)
-											.action(pageDownControl(table)))
-							.enabled(installTask.active.not())
-							.build();
+			filter = createFilterField(versionModel.filter(), table, installTask.active);
 			installedOnly = checkBox()
 							.link(versionModel.installedOnly())
 							.text("Installed")
@@ -765,7 +750,7 @@ public final class SDKBoyPanel extends JPanel {
 							.buildValue();
 			logLevel = comboBox()
 							.model(preferences.logLevels())
-							.value((Level) preferences.logLevel())
+							.value(preferences.logLevel())
 							.buildValue();
 			setBorder(emptyBorder());
 			add(flexibleGridLayoutPanel(0, 1)
