@@ -515,7 +515,7 @@ public final class SDKBoyModel {
 					return true;
 				}
 
-				Stream<String> strings = Stream.of(filter.getOrThrow().toLowerCase().split(" "))
+				Stream<String> strings = Stream.of(filter.getOrThrow().split(" "))
 								.map(String::trim);
 				String version = candidateVersion.version().toLowerCase();
 				if (candidateVersion.vendor() == null) {
@@ -604,8 +604,8 @@ public final class SDKBoyModel {
 			return logLevels;
 		}
 
-		public Object logLevel() {
-			return logger.getLogLevel();
+		public Level logLevel() {
+			return (Level) logger.getLogLevel();
 		}
 
 		public Optional<File> logFile() {

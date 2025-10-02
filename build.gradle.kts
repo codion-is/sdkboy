@@ -7,7 +7,7 @@ plugins {
     id("org.beryx.jlink") version "3.1.2"
     // Just for managing the license headers
     id("com.diffplug.spotless") version "7.0.1"
-    // For the asciidoctor docs
+    // For the asciidoc docs
     id("org.asciidoctor.jvm.convert") version "4.0.4"
     // For GitHub Releases
     id("com.github.breadmoirai.github-release") version "2.5.2"
@@ -102,7 +102,7 @@ tasks.register<WriteProperties>("writeVersion") {
 }
 
 // Include the version.properties file from above in the
-// application resources, see usage in TemplateAppModel
+// application resources, see usage in SDKBoyModel
 tasks.processResources {
     from(tasks.named("writeVersion"))
 }
