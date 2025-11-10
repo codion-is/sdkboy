@@ -18,14 +18,14 @@
  */
 package is.codion.sdkboy.model;
 
-import is.codion.common.logging.LoggerProxy;
 import is.codion.common.model.CancelException;
 import is.codion.common.model.preferences.UserPreferences;
-import is.codion.common.observer.Observer;
-import is.codion.common.state.ObservableState;
-import is.codion.common.state.State;
-import is.codion.common.value.Value;
-import is.codion.common.version.Version;
+import is.codion.common.reactive.observer.Observer;
+import is.codion.common.reactive.state.ObservableState;
+import is.codion.common.reactive.state.State;
+import is.codion.common.reactive.value.Value;
+import is.codion.common.utilities.logging.LoggerProxy;
+import is.codion.common.utilities.version.Version;
 import is.codion.plugin.flatlaf.intellij.themes.darkflat.DarkFlat;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateRow;
 import is.codion.swing.common.model.component.combobox.FilterComboBoxModel;
@@ -605,7 +605,7 @@ public final class SDKBoyModel {
 		}
 
 		public Level logLevel() {
-			return (Level) logger.getLogLevel();
+			return (Level) logger.getLogLevel(logger.rootLogger());
 		}
 
 		public Optional<File> logFile() {
@@ -632,7 +632,7 @@ public final class SDKBoyModel {
 		public void save() {
 			UserPreferences.set(CONFIRM_ACTIONS, Boolean.toString(confirmActions.is()));
 			UserPreferences.set(CONFIRM_EXIT, Boolean.toString(confirmExit.is()));
-			logger.setLogLevel(logLevels.selection().item().getOrThrow());
+			logger.setLogLevel(logger.rootLogger(), logLevels.selection().item().getOrThrow());
 			sdkManUi.zipExecutable = zipExecutable.get();
 			sdkManUi.unzipExecutable = unzipExecutable.get();
 			sdkManUi.tarExecutable = tarExecutable.get();
@@ -649,7 +649,7 @@ public final class SDKBoyModel {
 		public void revert() {
 			confirmActions.set(getConfirmActionsPreference());
 			confirmExit.set(getConfirmExitPreference());
-			logLevels.selection().item().set((Level) logger.getLogLevel());
+			logLevels.selection().item().set((Level) logger.getLogLevel(logger.rootLogger()));
 			zipExecutable.set(sdkManUi.zipExecutable);
 			unzipExecutable.set(sdkManUi.unzipExecutable);
 			tarExecutable.set(sdkManUi.tarExecutable);

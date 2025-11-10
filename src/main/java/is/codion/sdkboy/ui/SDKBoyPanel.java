@@ -18,11 +18,11 @@
  */
 package is.codion.sdkboy.ui;
 
-import is.codion.common.event.Event;
 import is.codion.common.model.selection.MultiSelection.Indexes;
-import is.codion.common.state.ObservableState;
-import is.codion.common.state.State;
-import is.codion.common.value.Value;
+import is.codion.common.reactive.event.Event;
+import is.codion.common.reactive.state.ObservableState;
+import is.codion.common.reactive.state.State;
+import is.codion.common.reactive.value.Value;
 import is.codion.sdkboy.model.SDKBoyModel;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel;
 import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateColumn;
@@ -31,6 +31,7 @@ import is.codion.sdkboy.model.SDKBoyModel.PreferencesModel;
 import is.codion.sdkboy.model.SDKBoyModel.VersionModel;
 import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionColumn;
 import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionRow;
+import is.codion.swing.common.model.action.DelayedAction;
 import is.codion.swing.common.model.worker.ProgressWorker;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
@@ -48,6 +49,7 @@ import is.codion.swing.common.ui.laf.LookAndFeelComboBox;
 import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
 
 import ch.qos.logback.classic.Level;
+import org.jspecify.annotations.Nullable;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -71,8 +73,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static is.codion.common.state.State.and;
+import static is.codion.common.reactive.state.State.and;
 import static is.codion.sdkboy.model.SDKBoyModel.PreferencesModel.getLookAndFeelPreference;
+import static is.codion.swing.common.model.action.DelayedAction.delayedAction;
 import static is.codion.swing.common.ui.Utilities.*;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
 import static is.codion.swing.common.ui.component.Components.*;
@@ -367,6 +370,8 @@ public final class SDKBoyPanel extends JPanel {
 		private final Control copyUseCommand;
 		private final JButton helpButton;
 
+		private @Nullable DelayedAction showSouthComponent;
+
 		private VersionPanel(SDKBoyModel model, State help) {
 			super(borderLayout());
 			this.model = model;
@@ -580,7 +585,7 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void onRefreshing(boolean refreshing) {
-			toggleSouthPanel(refreshProgress, refreshing);
+			toggleSouthComponent(refreshProgress, refreshing);
 		}
 
 		private void onVersionSelected(VersionRow versionRow) {
@@ -589,7 +594,7 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void onInstalling(boolean installing) {
-			toggleSouthPanel(installingPanel, installing);
+			toggleSouthComponent(installingPanel, installing);
 		}
 
 		private void onDownloading(boolean downloading) {
@@ -603,15 +608,33 @@ public final class SDKBoyPanel extends JPanel {
 			candidateModel.tableModel().items().refresh();
 		}
 
-		private void toggleSouthPanel(JComponent component, boolean embed) {
-			if (embed) {
-				southPanel.add(component, NORTH);
+		private void toggleSouthComponent(JComponent component, boolean show) {
+			if (show) {
+				showSouthComponent = delayedAction(350, () -> showSouthComponent(component));
 			}
 			else {
-				southPanel.remove(component);
+				hideSouthComponent(component);
 			}
+		}
+
+		private void showSouthComponent(JComponent component) {
+			southPanel.add(component, NORTH);
 			revalidate();
 			repaint();
+		}
+
+		private void hideSouthComponent(JComponent component) {
+			cancelShowSouthComponent();
+			southPanel.remove(component);
+			revalidate();
+			repaint();
+		}
+
+		private void cancelShowSouthComponent() {
+			if (showSouthComponent != null) {
+				showSouthComponent.cancel();
+				showSouthComponent = null;
+			}
 		}
 
 		private void configureColumns(FilterTableColumn.Builder<VersionColumn> column) {
