@@ -267,7 +267,7 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private static Control pageDownControl(FilterTable<?, ?> table) {
-		return Control.command(() -> {
+		return command(() -> {
 			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
 			table.model().selection().index().map(index ->
 							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
@@ -275,7 +275,7 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private static Control pageUpControl(FilterTable<?, ?> table) {
-		return Control.command(() -> {
+		return command(() -> {
 			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
 			table.model().selection().index().map(index ->
 							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
@@ -917,7 +917,7 @@ public final class SDKBoyPanel extends JPanel {
 		}
 	}
 
-	public static void main(String[] args) {
+	static void main() {
 		setDefaultUncaughtExceptionHandler((_, throwable) -> {
 			throwable.printStackTrace();
 			Dialogs.exception().show(throwable);
