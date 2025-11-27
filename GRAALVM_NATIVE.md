@@ -85,12 +85,6 @@ Due to current GraalVM limitations with Swing applications, consider using:
 
 ## Important Implementation Details
 
-### NativeMain Wrapper
-A wrapper class `is.codion.sdkboy.NativeMain` was created to set required system properties:
-- `java.home` - Required by AWT FontConfiguration
-- `java.awt.headless=false` - Ensures GUI mode
-- `sun.java2d.fontpath` - Font directory location
-
 ### Key Build Arguments
 - `--initialize-at-run-time` - Critical for AWT/Swing classes
 - `-H:+JNI` - Enables JNI support for native libraries

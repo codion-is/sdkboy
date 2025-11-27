@@ -915,6 +915,8 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	static void main() {
+		System.setProperty("java.home", "./");
+
 		setDefaultUncaughtExceptionHandler((_, throwable) -> {
 			throwable.printStackTrace();
 			Dialogs.exception().show(throwable);

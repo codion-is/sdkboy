@@ -12,13 +12,13 @@ plugins {
     // For GitHub Releases
     id("com.github.breadmoirai.github-release") version "2.5.2"
     // GraalVM Native Image support
-    id("org.graalvm.buildtools.native") version "0.10.4"
+    id("org.graalvm.buildtools.native") version "0.11.1"
 }
 
 dependencies {
     // Import the Codion Common BOM for dependency version management
     implementation(platform(libs.codion.common.bom))
-    
+
     // The Codion Swing Common UI module
     implementation(libs.codion.swing.common.ui)
     // Include all the standard Flat Look and Feels
@@ -41,8 +41,8 @@ version = "1.1.0"
 
 java {
     toolchain {
-        // Use GraalVM 24 for native image support
-        languageVersion.set(JavaLanguageVersion.of(24))
+        // Use GraalVM 25 for native image support
+        languageVersion.set(JavaLanguageVersion.of(25))
         // Request Oracle GraalVM for native image support
         vendor.set(JvmVendorSpec.ORACLE)
     }
@@ -149,6 +149,7 @@ jlink {
 tasks.register<Zip>("nativeImageZip") {
     group = "distribution"
     description = "Creates a zip of the native image"
+    dependsOn("nativeCompile")
 
     // Set the archive name with architecture and -native suffix
     val osName = OperatingSystem.current().familyName.replace(" ", "").lowercase()
@@ -172,6 +173,7 @@ tasks.register<Zip>("nativeImageZip") {
             else -> "sdkboy" to listOf("*.so", "*.dylib") // Fallback
         }
         include(executable)
+        include("lib")
         libraries.forEach { include(it) }
         if (!os.isWindows) {
             filePermissions {
@@ -179,8 +181,6 @@ tasks.register<Zip>("nativeImageZip") {
             }
         }
     }
-
-    dependsOn(tasks.named("nativeCompile"))
 }
 
 if (properties.containsKey("githubAccessToken")) {
@@ -202,7 +202,7 @@ graalvmNative {
     binaries {
         named("main") {
             imageName = project.name
-            mainClass = "is.codion.sdkboy.NativeMain"
+            mainClass = "is.codion.sdkboy.ui.SDKBoyPanel"
             verbose = true
             fallback = false
 
@@ -226,9 +226,6 @@ graalvmNative {
             buildArgs.add("-H:+AddAllCharsets")
             buildArgs.add("-H:+IncludeAllLocales")
 
-            // Enable AWT/Swing support
-            buildArgs.add("-H:+EnableAllSecurityServices")
-
             // JNI support for native libraries
             buildArgs.add("-H:+JNI")
             buildArgs.add("-H:+ForeignAPISupport")
@@ -238,6 +235,8 @@ graalvmNative {
             buildArgs.add("-H:IncludeResources=.*\\.(properties|xml|png|ico|icns)$")
             buildArgs.add("-H:IncludeResources=logback.xml")
             buildArgs.add("-H:IncludeResources=version.properties")
+
+            buildArgs.add("--enable-url-protocols=http,https")
 
             // Module support
             buildArgs.add("--add-modules=ALL-MODULE-PATH")
@@ -256,7 +255,17 @@ graalvmNative {
     }
 }
 
+tasks.named("nativeCompile") {
+    doLast {
+        // https://github.com/oracle/graal/issues/4875#issuecomment-1247574961
+        // lib directory required along with setProperty("java.home", "./");
+        // in main, but it doesn't need to contain anything
+        mkdir(layout.buildDirectory.dir("native/nativeCompile/lib"))
+    }
+}
+
 // Task to run the application with the GraalVM agent to collect metadata
+// System.setProperty("java.home", "./"); in main must be commented out
 tasks.register<JavaExec>("runWithAgent") {
     dependsOn("classes")
     classpath = sourceSets["main"].runtimeClasspath
