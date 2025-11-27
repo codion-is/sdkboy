@@ -36,8 +36,8 @@ import is.codion.swing.common.model.worker.ProgressWorker;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
 import is.codion.swing.common.ui.Utilities;
+import is.codion.swing.common.ui.ancestor.Ancestor;
 import is.codion.swing.common.ui.component.table.FilterTable;
-import is.codion.swing.common.ui.component.table.FilterTableCellRenderer;
 import is.codion.swing.common.ui.component.table.FilterTableColumn;
 import is.codion.swing.common.ui.component.value.ComponentValue;
 import is.codion.swing.common.ui.control.Control;
@@ -76,7 +76,7 @@ import java.util.List;
 import static is.codion.common.reactive.state.State.and;
 import static is.codion.sdkboy.model.SDKBoyModel.PreferencesModel.getLookAndFeelPreference;
 import static is.codion.swing.common.model.action.DelayedAction.delayedAction;
-import static is.codion.swing.common.ui.Utilities.*;
+import static is.codion.swing.common.ui.Utilities.setClipboard;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
 import static is.codion.swing.common.ui.component.Components.*;
 import static is.codion.swing.common.ui.control.Control.command;
@@ -227,7 +227,7 @@ public final class SDKBoyPanel extends JPanel {
 
 	private void exit() {
 		if (confirmExit()) {
-			parentWindow(this).dispose();
+			Ancestor.window().of(this).dispose();
 		}
 	}
 
@@ -245,38 +245,38 @@ public final class SDKBoyPanel extends JPanel {
 		Indexes selectedIndexes = table.model().selection().indexes();
 
 		return stringField()
-							.link(filter)
-							.hint("Filter...")
-							.lowerCase(true)
-							.selectAllOnFocusGained(true)
-							.transferFocusOnEnter(true)
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_UP)
-											.action(command(selectedIndexes::decrement)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_DOWN)
-											.action(command(selectedIndexes::increment)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_PAGE_UP)
-											.action(pageUpControl(table)))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_PAGE_DOWN)
-											.action(pageDownControl(table)))
-							.enabled(installing.not())
-							.build();
+						.link(filter)
+						.hint("Filter...")
+						.lowerCase(true)
+						.selectAllOnFocusGained(true)
+						.transferFocusOnEnter(true)
+						.keyEvent(KeyEvents.builder()
+										.keyCode(VK_UP)
+										.action(command(selectedIndexes::decrement)))
+						.keyEvent(KeyEvents.builder()
+										.keyCode(VK_DOWN)
+										.action(command(selectedIndexes::increment)))
+						.keyEvent(KeyEvents.builder()
+										.keyCode(VK_PAGE_UP)
+										.action(pageUpControl(table)))
+						.keyEvent(KeyEvents.builder()
+										.keyCode(VK_PAGE_DOWN)
+										.action(pageDownControl(table)))
+						.enabled(installing.not())
+						.build();
 	}
 
 	private static Control pageDownControl(FilterTable<?, ?> table) {
-		return Control.command(() -> {
-			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
+		return command(() -> {
+			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
 			table.model().selection().index().map(index ->
 							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
 		});
 	}
 
 	private static Control pageUpControl(FilterTable<?, ?> table) {
-		return Control.command(() -> {
-			int visibleRowCount = parentOfType(JScrollPane.class, table).getViewport().getHeight() / table.getRowHeight();
+		return command(() -> {
+			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
 			table.model().selection().index().map(index ->
 							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
 		});
@@ -313,11 +313,8 @@ public final class SDKBoyPanel extends JPanel {
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
 							.columnReordering(false)
 							.enabled(and(installing.not(), refreshingVersions.not()))
-							.cellRenderer(CandidateColumn.INSTALLED,
-											FilterTableCellRenderer.builder()
-															.columnClass(Integer.class)
-															.horizontalAlignment(SwingConstants.CENTER)
-															.build())
+							.cellRenderer(CandidateColumn.INSTALLED, Integer.class, renderer -> renderer
+											.horizontalAlignment(SwingConstants.CENTER))
 							.build();
 			filter = createFilterField(candidateModel.filter(), table, installing);
 			installedOnly = checkBox()
@@ -917,7 +914,7 @@ public final class SDKBoyPanel extends JPanel {
 		}
 	}
 
-	public static void main(String[] args) {
+	static void main() {
 		setDefaultUncaughtExceptionHandler((_, throwable) -> {
 			throwable.printStackTrace();
 			Dialogs.exception().show(throwable);
