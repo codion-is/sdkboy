@@ -1,0 +1,15 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": ".*\\.(properties|xml|png|ico|icns)$"
+      },
+      {
+        "pattern": "logback.xml"
+      },
+      {
+        "pattern": "version.properties"
+      }
+    ]
+  }
+}

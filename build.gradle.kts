@@ -166,15 +166,6 @@ tasks.register<Zip>("nativeImageZip") {
     // Include the native executable and required libraries
     from(layout.buildDirectory.dir("native/nativeCompile")) {
         val os = OperatingSystem.current()
-        val (executable, libraries) = when {
-            os.isWindows -> "sdkboy.exe" to listOf("*.dll")
-            os.isLinux -> "sdkboy" to listOf("*.so")
-            os.isMacOsX -> "sdkboy" to listOf("*.dylib")
-            else -> "sdkboy" to listOf("*.so", "*.dylib") // Fallback
-        }
-        include(executable)
-        include("lib")
-        libraries.forEach { include(it) }
         if (!os.isWindows) {
             filePermissions {
                 unix("rwxr-xr-x")
@@ -209,7 +200,6 @@ graalvmNative {
             buildArgs.add("--no-fallback")
             buildArgs.add("-H:+ReportExceptionStackTraces")
             buildArgs.add("-Djava.awt.headless=false")
-            buildArgs.add("-Djava.home=${System.getProperty("java.home")}")
             buildArgs.add("--initialize-at-run-time=sun.awt,com.sun.jna,sun.java2d,sun.font,java.awt.Toolkit,sun.awt.AWTAccessor")
 
             // Windows-specific AWT support
@@ -230,11 +220,6 @@ graalvmNative {
             buildArgs.add("-H:+JNI")
             buildArgs.add("-H:+ForeignAPISupport")
             buildArgs.add("-H:ConfigurationFileDirectories=${projectDir}/src/main/resources/META-INF/native-image/is.codion.sdkboy")
-
-            // Resource configuration
-            buildArgs.add("-H:IncludeResources=.*\\.(properties|xml|png|ico|icns)$")
-            buildArgs.add("-H:IncludeResources=logback.xml")
-            buildArgs.add("-H:IncludeResources=version.properties")
 
             buildArgs.add("--enable-url-protocols=http,https")
 
@@ -265,7 +250,7 @@ tasks.named("nativeCompile") {
 }
 
 // Task to run the application with the GraalVM agent to collect metadata
-// System.setProperty("java.home", "./"); in main must be commented out
+// System.setProperty("java.home", execDirPath.toString()); in main must be commented out
 tasks.register<JavaExec>("runWithAgent") {
     dependsOn("classes")
     classpath = sourceSets["main"].runtimeClasspath

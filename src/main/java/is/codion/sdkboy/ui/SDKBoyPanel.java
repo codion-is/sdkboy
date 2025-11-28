@@ -71,6 +71,9 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static is.codion.common.reactive.state.State.and;
@@ -921,8 +924,10 @@ public final class SDKBoyPanel extends JPanel {
 		}
 	}
 
-	static void main() {
-		System.setProperty("java.home", "./");
+	static void main() throws URISyntaxException {
+		//https://github.com/vektory79/plantuml-native-image
+		Path execDirPath = Paths.get(SDKBoyPanel.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+		System.setProperty("java.home", execDirPath.toString());
 
 		setDefaultUncaughtExceptionHandler((_, throwable) -> {
 			throwable.printStackTrace();
