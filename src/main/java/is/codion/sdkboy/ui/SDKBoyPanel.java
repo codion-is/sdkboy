@@ -366,8 +366,7 @@ public final class SDKBoyPanel extends JPanel {
 		private final Control use;
 		private final Control copyUseCommand;
 		private final JButton helpButton;
-
-		private @Nullable DelayedAction showSouthComponent;
+		private final SouthComponent southComponent;
 
 		private VersionPanel(SDKBoyModel model, State help) {
 			super(borderLayout());
@@ -468,6 +467,7 @@ public final class SDKBoyPanel extends JPanel {
 											.add(usedOnly)
 											.add(helpButton))
 							.build();
+			southComponent = new SouthComponent();
 			setBorder(createCompoundBorder(createTitledBorder("Versions"), emptyBorder()));
 			add(scrollPane()
 							.view(table)
@@ -582,7 +582,7 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void onRefreshing(boolean refreshing) {
-			toggleSouthComponent(refreshProgress, refreshing);
+			southComponent.toggle(refreshProgress, refreshing);
 		}
 
 		private void onVersionSelected(VersionRow versionRow) {
@@ -591,7 +591,7 @@ public final class SDKBoyPanel extends JPanel {
 		}
 
 		private void onInstalling(boolean installing) {
-			toggleSouthComponent(installingPanel, installing);
+			southComponent.toggle(installingPanel, installing);
 		}
 
 		private void onDownloading(boolean downloading) {
@@ -603,35 +603,6 @@ public final class SDKBoyPanel extends JPanel {
 
 		private void refreshCandidates() {
 			candidateModel.tableModel().items().refresh();
-		}
-
-		private void toggleSouthComponent(JComponent component, boolean show) {
-			if (show) {
-				showSouthComponent = delayedAction(350, () -> showSouthComponent(component));
-			}
-			else {
-				hideSouthComponent(component);
-			}
-		}
-
-		private void showSouthComponent(JComponent component) {
-			southPanel.add(component, NORTH);
-			revalidate();
-			repaint();
-		}
-
-		private void hideSouthComponent(JComponent component) {
-			cancelShowSouthComponent();
-			southPanel.remove(component);
-			revalidate();
-			repaint();
-		}
-
-		private void cancelShowSouthComponent() {
-			if (showSouthComponent != null) {
-				showSouthComponent.cancel();
-				showSouthComponent = null;
-			}
 		}
 
 		private void configureColumns(FilterTableColumn.Builder<VersionColumn> column) {
@@ -681,6 +652,42 @@ public final class SDKBoyPanel extends JPanel {
 			private void result(Runnable onInstalled) {
 				model.refresh();
 				onInstalled.run();
+			}
+		}
+
+		private final class SouthComponent {
+
+			private static final int SHOW_DELAY = 350;
+
+			private @Nullable DelayedAction show;
+
+			private void toggle(JComponent component, boolean visible) {
+				if (visible) {
+					show = delayedAction(SHOW_DELAY, () -> show(component));
+				}
+				else {
+					hide(component);
+				}
+			}
+
+			private void show(JComponent component) {
+				southPanel.add(component, NORTH);
+				revalidate();
+				repaint();
+			}
+
+			private void hide(JComponent component) {
+				cancel();
+				southPanel.remove(component);
+				revalidate();
+				repaint();
+			}
+
+			private void cancel() {
+				if (show != null) {
+					show.cancel();
+					show = null;
+				}
 			}
 		}
 	}
