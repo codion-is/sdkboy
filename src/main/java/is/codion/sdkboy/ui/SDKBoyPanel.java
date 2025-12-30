@@ -43,7 +43,6 @@ import is.codion.swing.common.ui.component.value.ComponentValue;
 import is.codion.swing.common.ui.control.Control;
 import is.codion.swing.common.ui.dialog.Dialogs;
 import is.codion.swing.common.ui.frame.Frames;
-import is.codion.swing.common.ui.icon.Logos;
 import is.codion.swing.common.ui.key.KeyEvents;
 import is.codion.swing.common.ui.laf.LookAndFeelComboBox;
 import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
@@ -67,6 +66,7 @@ import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.File;
@@ -80,6 +80,7 @@ import static is.codion.swing.common.ui.Utilities.setClipboard;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
 import static is.codion.swing.common.ui.component.Components.*;
 import static is.codion.swing.common.ui.control.Control.command;
+import static is.codion.swing.common.ui.icon.SVGIcon.svgIcon;
 import static is.codion.swing.common.ui.laf.LookAndFeelProvider.findLookAndFeel;
 import static is.codion.swing.common.ui.layout.Layouts.borderLayout;
 import static java.awt.BorderLayout.*;
@@ -934,7 +935,7 @@ public final class SDKBoyPanel extends JPanel {
 		Frames.builder()
 						.component(sdkBoyPanel)
 						.title("SDKBOY " + SDKBoyModel.VERSION)
-						.icon(Logos.logoTransparent())
+						.icon(svgIcon(SDKBoyPanel.class.getResource("logo.svg"), 68, Color.BLACK))
 						.centerFrame(true)
 						.defaultCloseOperation(DO_NOTHING_ON_CLOSE)
 						.onClosing(_ -> sdkBoyPanel.exit())
