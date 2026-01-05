@@ -4,7 +4,7 @@ A Cross-Platform Java Swing based https://sdkman.io[SDKMAN] Desktop App.
 
 Uses the `sdkman-api` module from https://github.com/jagodevreede/sdkman-ui[jagodevreede/sdkman-ui] and would not exist without it.
 
-Developed using the `codion-common-swing-ui` module of the https://github.com/codion-is/codion[Codion Application Framework].
+Developed using the `codion-swing-common-ui` module of the https://github.com/codion-is/codion[Codion Application Framework].
 
 Look & Feel provided by https://github.com/JFormDesigner/FlatLaf[Flat Look & Feel].
 

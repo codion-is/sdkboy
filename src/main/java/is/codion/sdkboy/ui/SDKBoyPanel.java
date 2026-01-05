@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SDKBOY.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright (c) 2025, Björn Darri Sigurðsson.
+ * Copyright (c) 2025 - 2026, Björn Darri Sigurðsson.
  */
 package is.codion.sdkboy.ui;
 
@@ -43,7 +43,6 @@ import is.codion.swing.common.ui.component.value.ComponentValue;
 import is.codion.swing.common.ui.control.Control;
 import is.codion.swing.common.ui.dialog.Dialogs;
 import is.codion.swing.common.ui.frame.Frames;
-import is.codion.swing.common.ui.icon.Logos;
 import is.codion.swing.common.ui.key.KeyEvents;
 import is.codion.swing.common.ui.laf.LookAndFeelComboBox;
 import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
@@ -67,6 +66,7 @@ import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.io.File;
@@ -83,6 +83,7 @@ import static is.codion.swing.common.ui.Utilities.setClipboard;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
 import static is.codion.swing.common.ui.component.Components.*;
 import static is.codion.swing.common.ui.control.Control.command;
+import static is.codion.swing.common.ui.icon.SVGIcon.svgIcon;
 import static is.codion.swing.common.ui.laf.LookAndFeelProvider.findLookAndFeel;
 import static is.codion.swing.common.ui.layout.Layouts.borderLayout;
 import static java.awt.BorderLayout.*;
@@ -272,7 +273,7 @@ public final class SDKBoyPanel extends JPanel {
 	private static Control pageDownControl(FilterTable<?, ?> table) {
 		return command(() -> {
 			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
-			table.model().selection().index().map(index ->
+			table.model().selection().index().update(index ->
 							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
 		});
 	}
@@ -280,7 +281,7 @@ public final class SDKBoyPanel extends JPanel {
 	private static Control pageUpControl(FilterTable<?, ?> table) {
 		return command(() -> {
 			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
-			table.model().selection().index().map(index ->
+			table.model().selection().index().update(index ->
 							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
 		});
 	}
@@ -941,7 +942,7 @@ public final class SDKBoyPanel extends JPanel {
 		Frames.builder()
 						.component(sdkBoyPanel)
 						.title("SDKBOY " + SDKBoyModel.VERSION)
-						.icon(Logos.logoTransparent())
+						.icon(svgIcon(SDKBoyPanel.class.getResource("logo.svg"), 68, Color.BLACK))
 						.centerFrame(true)
 						.defaultCloseOperation(DO_NOTHING_ON_CLOSE)
 						.onClosing(_ -> sdkBoyPanel.exit())
