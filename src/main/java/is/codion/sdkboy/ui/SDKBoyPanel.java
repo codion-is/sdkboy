@@ -270,7 +270,7 @@ public final class SDKBoyPanel extends JPanel {
 	private static Control pageDownControl(FilterTable<?, ?> table) {
 		return command(() -> {
 			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
-			table.model().selection().index().map(index ->
+			table.model().selection().index().update(index ->
 							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
 		});
 	}
@@ -278,7 +278,7 @@ public final class SDKBoyPanel extends JPanel {
 	private static Control pageUpControl(FilterTable<?, ?> table) {
 		return command(() -> {
 			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
-			table.model().selection().index().map(index ->
+			table.model().selection().index().update(index ->
 							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
 		});
 	}
