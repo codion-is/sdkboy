@@ -242,6 +242,7 @@ public final class SDKBoyModel {
 						FilterTableModel.builder()
 										.columns(new VersionTableColumns())
 										.items(new VersionItems())
+										.onItemSelected(this::onVersionSelected)
 										.included(new VersionIncluded())
 										.build();
 		private final State selectedInstalled = State.state();
@@ -261,7 +262,6 @@ public final class SDKBoyModel {
 						.build();
 
 		private VersionModel() {
-			tableModel.selection().item().addConsumer(this::onVersionSelected);
 			tableModel.sort().order(VersionColumn.VENDOR).set(ASCENDING);
 			tableModel.sort().order(VersionColumn.VERSION).add(DESCENDING);
 			candidateModel.tableModel.selection().item().addListener(this::onCandidateSelected);

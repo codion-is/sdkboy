@@ -20,7 +20,7 @@ dependencies {
     // The Codion Swing Common UI module
     implementation(libs.codion.swing.common.ui)
     // Include all the standard Flat Look and Feels
-    implementation(libs.codion.plugin.flatlaf.lookandfeels)
+    implementation(libs.codion.plugin.flatlaf.themes)
     // and a bunch of IntelliJ theme based ones
     implementation(libs.codion.plugin.flatlaf.intellij.themes)
     // The Codion logback plugin so we can configure
