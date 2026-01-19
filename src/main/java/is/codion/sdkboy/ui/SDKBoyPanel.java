@@ -313,6 +313,7 @@ public final class SDKBoyPanel extends JPanel {
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
 							.columnReordering(false)
+							.rowsFillViewport(true)
 							.enabled(and(installing.not(), refreshingVersions.not()))
 							.cellRenderer(CandidateColumn.INSTALLED, Integer.class, renderer -> renderer
 											.horizontalAlignment(SwingConstants.CENTER))
@@ -407,7 +408,8 @@ public final class SDKBoyPanel extends JPanel {
 							.selectionMode(SINGLE_SELECTION)
 							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
 							.columnReordering(false)
-							.hiddenColumns(VersionColumn.VENDOR)
+							.hideColumns(VersionColumn.VENDOR)
+							.rowsFillViewport(true)
 							.doubleClick(command(this::onVersionDoubleClick))
 							.enabled(installTask.active.not())
 							.build();

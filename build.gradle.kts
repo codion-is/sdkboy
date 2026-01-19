@@ -35,7 +35,7 @@ dependencies {
     implementation(libs.jna.platform)
 }
 
-version = "1.1.1"
+version = "1.1.2"
 
 java {
     toolchain {
