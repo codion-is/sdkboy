@@ -622,7 +622,7 @@ public final class SDKBoyModel {
 		}
 
 		public void setLookAndFeelPreference(LookAndFeelEnabler lookAndFeelEnabler) {
-			UserPreferences.set(LOOK_AND_FEEL, lookAndFeelEnabler.lookAndFeel().getClass().getName());
+			UserPreferences.put(LOOK_AND_FEEL, lookAndFeelEnabler.lookAndFeel().getClass().getName());
 		}
 
 		public static String getLookAndFeelPreference() {
@@ -630,8 +630,8 @@ public final class SDKBoyModel {
 		}
 
 		public void save() {
-			UserPreferences.set(CONFIRM_ACTIONS, Boolean.toString(confirmActions.is()));
-			UserPreferences.set(CONFIRM_EXIT, Boolean.toString(confirmExit.is()));
+			UserPreferences.put(CONFIRM_ACTIONS, Boolean.toString(confirmActions.is()));
+			UserPreferences.put(CONFIRM_EXIT, Boolean.toString(confirmExit.is()));
 			logger.setLogLevel(logger.rootLogger(), logLevels.selection().item().getOrThrow());
 			sdkManUi.zipExecutable = zipExecutable.get();
 			sdkManUi.unzipExecutable = unzipExecutable.get();

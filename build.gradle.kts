@@ -6,7 +6,7 @@ plugins {
     // https://badass-jlink-plugin.beryx.org
     id("org.beryx.jlink") version "3.1.2"
     // Just for managing the license headers
-    id("com.diffplug.spotless") version "7.0.1"
+    id("com.diffplug.spotless") version "8.2.1"
     // For the asciidoc docs
     id("org.asciidoctor.jvm.convert") version "4.0.4"
     // For GitHub Releases
