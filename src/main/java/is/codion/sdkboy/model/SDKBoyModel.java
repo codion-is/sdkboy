@@ -427,6 +427,12 @@ public final class SDKBoyModel {
 				if (version != null && versionInfo.version != null) {
 					return version.compareTo(versionInfo.version);
 				}
+				if (version != null) {
+					return -1;
+				}
+				if (versionInfo.version != null) {
+					return 1;
+				}
 
 				return versionName.compareTo(versionInfo.versionName);
 			}
