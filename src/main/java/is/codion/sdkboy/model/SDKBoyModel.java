@@ -97,7 +97,7 @@ public final class SDKBoyModel {
 
 		private final FilterTableModel<CandidateRow, CandidateColumn> tableModel =
 						FilterTableModel.builder()
-										.columns(new CandidateTableColumns())
+										.columns(new CandidateColumns())
 										.items(new CandidateItems())
 										.included(new CandidateIncluded())
 										.build();
@@ -159,7 +159,7 @@ public final class SDKBoyModel {
 			}
 		}
 
-		private static final class CandidateTableColumns implements TableColumns<CandidateRow, CandidateColumn> {
+		private static final class CandidateColumns implements TableColumns<CandidateRow, CandidateColumn> {
 
 			private static final List<CandidateColumn> IDENTIFIERS = List.of(CandidateColumn.values());
 
@@ -240,7 +240,7 @@ public final class SDKBoyModel {
 
 		private final FilterTableModel<VersionRow, VersionColumn> tableModel =
 						FilterTableModel.builder()
-										.columns(new VersionTableColumns())
+										.columns(new VersionColumns())
 										.items(new VersionItems())
 										.onItemSelected(this::onVersionSelected)
 										.included(new VersionIncluded())
@@ -438,7 +438,7 @@ public final class SDKBoyModel {
 			}
 		}
 
-		private static final class VersionTableColumns implements TableColumns<VersionRow, VersionColumn> {
+		private static final class VersionColumns implements TableColumns<VersionRow, VersionColumn> {
 
 			private static final List<VersionColumn> IDENTIFIERS = List.of(VersionColumn.values());
 
