@@ -16,7 +16,7 @@ plugins {
 dependencies {
     // Import the Codion Common BOM for dependency version management
     implementation(platform(libs.codion.common.bom))
-    
+
     // The Codion Swing Common UI module
     implementation(libs.codion.swing.common.ui)
     // Include all the standard Flat Look and Feels
@@ -82,7 +82,7 @@ tasks.asciidoctor {
 
     attributes(
         mapOf(
-            "source-highlighter" to "prettify",
+            "source-highlighter" to "rouge",
             "tabsize" to "2"
         )
     )
