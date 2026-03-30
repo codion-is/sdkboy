@@ -34,7 +34,7 @@ import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionRow;
 import is.codion.swing.common.model.action.DelayedAction;
 import is.codion.swing.common.model.worker.ProgressWorker;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
-import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
+import is.codion.swing.common.model.worker.ProgressWorker.ProgressTaskHandler;
 import is.codion.swing.common.ui.Utilities;
 import is.codion.swing.common.ui.ancestor.Ancestor;
 import is.codion.swing.common.ui.component.table.FilterTable;
@@ -62,7 +62,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.BorderLayout;
@@ -500,15 +499,11 @@ public final class SDKBoyPanel extends JPanel {
 			install(() -> {});
 		}
 
-		private void install(Runnable onInstalled) {
+		private void install(Runnable onSuccess) {
 			if (confirmInstall()) {
 				ProgressWorker.builder()
 								.task(installTask)
-								.onStarted(installTask::started)
-								.onProgress(installTask::progress)
-								.onPublish(installTask::publish)
-								.onDone(installTask::done)
-								.onResult(() -> installTask.result(onInstalled))
+								.onSuccess(onSuccess)
 								.execute();
 			}
 		}
@@ -517,7 +512,7 @@ public final class SDKBoyPanel extends JPanel {
 			if (confirmUninstall()) {
 				ProgressWorker.builder()
 								.task(versionModel::uninstall)
-								.onResult(model::refresh)
+								.onSuccess(model::refresh)
 								.execute();
 			}
 		}
@@ -536,18 +531,18 @@ public final class SDKBoyPanel extends JPanel {
 			if (confirmUse()) {
 				ProgressWorker.builder()
 								.task(versionModel::use)
-								.onResult(versionModel::refresh)
+								.onSuccess(versionModel::refresh)
 								.execute();
 			}
 		}
 
 		private void copyUseCommand() {
 			VersionRow selected = versionModel.selected();
-			if (!selected.version().installed()) {
-				install(() -> copyUseCommand(selected));
+			if (selected.version().installed()) {
+				copyUseCommand(selected);
 			}
 			else {
-				copyUseCommand(selected);
+				install(() -> copyUseCommand(selected));
 			}
 		}
 
@@ -616,7 +611,7 @@ public final class SDKBoyPanel extends JPanel {
 			}
 		}
 
-		private final class InstallTask implements ProgressTask<String> {
+		private final class InstallTask implements ProgressTaskHandler<String> {
 
 			private final State active = State.state();
 			private final State downloading = State.state();
@@ -627,34 +622,38 @@ public final class SDKBoyPanel extends JPanel {
 				versionModel.install(progress, downloading, cancel);
 			}
 
-			private void cancel() {
-				cancel.run();
-			}
-
-			private void started() {
+			@Override
+			public void onStarted() {
 				installProgress.setString("Procrastinating");
 				active.set(true);
 			}
 
-			private void progress(int progress) {
-				installProgress.getModel().setValue(progress);
+			@Override
+			public void onProgress(int progress) {
+				installProgress.setValue(progress);
 			}
 
-			private void publish(List<String> strings) {
-				installProgress.setString(strings.getFirst() + " " + versionName());
+			@Override
+			public void onPublish(List<String> status) {
+				installProgress.setString(status.getFirst() + " " + versionName());
 			}
 
-			private void done() {
+			@Override
+			public void onDone() {
 				installProgress.setString("");
-				installProgress.getModel().setValue(0);
+				installProgress.setValue(0);
 				filter.requestFocusInWindow();
 				downloading.set(false);
 				active.set(false);
 			}
 
-			private void result(Runnable onInstalled) {
+			@Override
+			public void onSuccess() {
 				model.refresh();
-				onInstalled.run();
+			}
+
+			private void cancel() {
+				cancel.run();
 			}
 		}
 
@@ -857,7 +856,7 @@ public final class SDKBoyPanel extends JPanel {
 
 		private final JTextArea shortcuts = textArea()
 						.value(SHORTCUTS)
-						.font(monospaceFont())
+						.font(HelpPanel::monospaceFont)
 						.editable(false)
 						.focusable(false)
 						.build();
@@ -881,9 +880,7 @@ public final class SDKBoyPanel extends JPanel {
 			Utilities.updateUI(shortcuts, aboutPanel);
 		}
 
-		private static Font monospaceFont() {
-			Font font = UIManager.getFont("TextArea.font");
-
+		private static Font monospaceFont(Font font) {
 			return new Font(Font.MONOSPACED, font.getStyle(), font.getSize());
 		}
 
@@ -900,7 +897,7 @@ public final class SDKBoyPanel extends JPanel {
 
 			private AboutPanel() {
 				super(borderLayout());
-				editorPane.setFont(monospaceFont());
+				editorPane.setFont(monospaceFont(editorPane.getFont()));
 				editorPane.setEditable(false);
 				editorPane.setFocusable(false);
 				editorPane.addHyperlinkListener(new OpenLink());

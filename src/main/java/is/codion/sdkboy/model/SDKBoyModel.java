@@ -188,7 +188,7 @@ public final class SDKBoyModel {
 			public Object value(CandidateRow row, CandidateColumn column) {
 				return switch (column) {
 					case NAME -> row.candidate.name();
-					case INSTALLED -> row.installed == 0 ? null : row.installed;
+					case INSTALLED -> row.installed() == 0 ? null : row.installed();
 				};
 			}
 
@@ -474,7 +474,7 @@ public final class SDKBoyModel {
 					case VERSION -> row.versionInfo();
 					case INSTALLED -> row.version.installed();
 					case DOWNLOADED -> row.version.available();
-					case USED -> row.used;
+					case USED -> row.used();
 				};
 			}
 		}
