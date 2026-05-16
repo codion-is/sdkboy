@@ -4,7 +4,7 @@ plugins {
     // The Badass Jlink Plugin provides jlink and jpackage
     // functionality and applies the java application plugin
     // https://badass-jlink-plugin.beryx.org
-    id("org.beryx.jlink") version "3.1.3"
+    id("org.beryx.jlink") version "4.0.0"
     // Just for managing the license headers
     id("com.diffplug.spotless") version "8.2.1"
     // For the asciidoc docs
@@ -40,7 +40,7 @@ version = "1.1.3"
 java {
     toolchain {
         // Use the latest possible Java version
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(JavaLanguageVersion.of(26))
         vendor.set(JvmVendorSpec.ORACLE)
     }
 }

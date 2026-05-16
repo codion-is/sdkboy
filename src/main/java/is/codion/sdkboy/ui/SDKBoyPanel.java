@@ -665,7 +665,7 @@ public final class SDKBoyPanel extends JPanel {
 
 			private void toggle(JComponent component, boolean visible) {
 				if (visible) {
-					show = delayedAction(SHOW_DELAY, () -> show(component));
+					show = delayedAction(() -> show(component), SHOW_DELAY);
 				}
 				else {
 					hide(component);
