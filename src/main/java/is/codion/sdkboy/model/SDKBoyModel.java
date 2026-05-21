@@ -32,7 +32,6 @@ import is.codion.swing.common.model.component.combobox.FilterComboBoxModel;
 import is.codion.swing.common.model.component.table.FilterTableModel;
 import is.codion.swing.common.model.component.table.FilterTableModel.TableColumns;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
-import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
 
 import ch.qos.logback.classic.Level;
 import io.github.jagodevreede.sdkman.api.ProgressInformation;
@@ -627,8 +626,8 @@ public final class SDKBoyModel {
 							.findFirst();
 		}
 
-		public void setLookAndFeelPreference(LookAndFeelEnabler lookAndFeelEnabler) {
-			UserPreferences.put(LOOK_AND_FEEL, lookAndFeelEnabler.lookAndFeel().getClass().getName());
+		public void setLookAndFeelPreference(String lookAndFeelClassName) {
+			UserPreferences.put(LOOK_AND_FEEL, lookAndFeelClassName);
 		}
 
 		public static String getLookAndFeelPreference() {

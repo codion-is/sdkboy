@@ -715,7 +715,7 @@ public final class SDKBoyPanel extends JPanel {
 			super(borderLayout());
 			this.preferences = preferences;
 			lookAndFeelComboBox = LookAndFeelComboBox.builder()
-							.onSelection(preferences::setLookAndFeelPreference)
+							.onSelection(this::setLookAndFeelPreference)
 							.build();
 			zipExecutable = stringField()
 							.link(preferences.zipExecutable())
@@ -822,6 +822,10 @@ public final class SDKBoyPanel extends JPanel {
 							.add(confirmActions.component())
 							.add(confirmExit.component())
 							.build(), CENTER);
+		}
+
+		private void setLookAndFeelPreference(LookAndFeelEnabler lookAndFeelEnabler) {
+			preferences.setLookAndFeelPreference(lookAndFeelEnabler.lookAndFeel().getClass().getName());
 		}
 
 		private void openLogFile() {
