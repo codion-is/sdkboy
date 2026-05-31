@@ -521,7 +521,8 @@ public final class SDKBoyModel {
 				}
 
 				Stream<String> strings = Stream.of(filter.getOrThrow().split(" "))
-								.map(String::trim);
+								.map(String::trim)
+								.filter(s -> !s.isEmpty());
 				String version = candidateVersion.version().toLowerCase();
 				if (candidateVersion.vendor() == null) {
 					return strings.allMatch(version::contains);
