@@ -20,11 +20,53 @@ NOTE: For running and building the app see <<#_build, Build>> section.
 include::{dir-source}/is/codion/sdkboy/model/SDKBoyModel.java[tags=sdkboy_model]
 ----
 
+== CandidateModel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/model/CandidateModel.java[tags=candidate_model]
+----
+
+== VersionModel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/model/VersionModel.java[tags=version_model]
+----
+
+== PreferencesModel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/model/PreferencesModel.java[tags=preferences_model]
+----
+
 == SDKBoyPanel
 
 [source,java,options="nowrap"]
 ----
 include::{dir-source}/is/codion/sdkboy/ui/SDKBoyPanel.java[tags=sdkboy_panel]
+----
+
+== CandidatePanel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/ui/CandidatePanel.java[tags=candidate_panel]
+----
+
+== VersionPanel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/ui/VersionPanel.java[tags=version_panel]
+----
+
+== PreferencesPanel
+
+[source,java,options="nowrap"]
+----
+include::{dir-source}/is/codion/sdkboy/ui/PreferencesPanel.java[tags=preferences_panel]
 ----
 
 == Module Info
