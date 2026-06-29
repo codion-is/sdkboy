@@ -18,11 +18,11 @@
  */
 package is.codion.sdkboy.model;
 
+import is.codion.common.model.component.table.FilterTableModel.TableColumns;
 import is.codion.common.reactive.state.State;
 import is.codion.common.reactive.value.Value;
 import is.codion.common.utilities.exceptions.Exceptions;
-import is.codion.swing.common.model.component.table.FilterTableModel;
-import is.codion.swing.common.model.component.table.FilterTableModel.TableColumns;
+import is.codion.swing.common.model.component.table.SwingFilterTableModel;
 
 import io.github.jagodevreede.sdkman.api.SdkManApi;
 import io.github.jagodevreede.sdkman.api.domain.Candidate;
@@ -35,14 +35,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static io.github.jagodevreede.sdkman.api.SdkManApi.DEFAULT_SDKMAN_HOME;
-import static javax.swing.SortOrder.ASCENDING;
+import static is.codion.common.model.filter.SortOrder.ASCENDING;
 
 // tag::candidate_model[]
 public final class CandidateModel {
 
 	private final SdkManApi sdkMan = new SdkManApi(DEFAULT_SDKMAN_HOME);
-	private final FilterTableModel<CandidateRow, CandidateColumn> tableModel =
-					FilterTableModel.builder()
+	private final SwingFilterTableModel<CandidateRow, CandidateColumn> tableModel =
+					SwingFilterTableModel.builder()
 									.columns(new CandidateColumns())
 									.items(new CandidateItems())
 									.included(new CandidateIncluded())
@@ -60,7 +60,7 @@ public final class CandidateModel {
 		tableModel.items().refresh();
 	}
 
-	public FilterTableModel<CandidateRow, CandidateColumn> tableModel() {
+	public SwingFilterTableModel<CandidateRow, CandidateColumn> tableModel() {
 		return tableModel;
 	}
 

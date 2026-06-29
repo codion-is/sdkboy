@@ -24,7 +24,7 @@ import is.codion.common.reactive.value.Value;
 import is.codion.common.utilities.exceptions.Exceptions;
 import is.codion.common.utilities.logging.LoggerProxy;
 import is.codion.plugin.flatlaf.intellij.themes.darkflat.DarkFlat;
-import is.codion.swing.common.model.component.combobox.FilterComboBoxModel;
+import is.codion.swing.common.model.component.combobox.SwingFilterComboBoxModel;
 
 import ch.qos.logback.classic.Level;
 import io.github.jagodevreede.sdkman.api.SdkManUiPreferences;
@@ -50,7 +50,7 @@ public final class PreferencesModel {
 	private final State keepDownloadsAvailable = State.state(sdkManUi.keepDownloadsAvailable);
 	private final State confirmActions = State.state(getConfirmActionsPreference());
 	private final State confirmExit = State.state(getConfirmExitPreference());
-	private final FilterComboBoxModel<Level> logLevels = FilterComboBoxModel.builder()
+	private final SwingFilterComboBoxModel<Level> logLevels = SwingFilterComboBoxModel.builder()
 					.items(logger.levels().stream()
 									.map(Level.class::cast)
 									.toList())
@@ -82,7 +82,7 @@ public final class PreferencesModel {
 		return confirmExit;
 	}
 
-	public FilterComboBoxModel<Level> logLevels() {
+	public SwingFilterComboBoxModel<Level> logLevels() {
 		return logLevels;
 	}
 

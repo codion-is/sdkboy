@@ -19,6 +19,7 @@
 package is.codion.sdkboy.model;
 
 import is.codion.common.model.CancelException;
+import is.codion.common.model.component.table.FilterTableModel.TableColumns;
 import is.codion.common.reactive.observer.Observable;
 import is.codion.common.reactive.observer.Observer;
 import is.codion.common.reactive.state.ObservableState;
@@ -27,8 +28,7 @@ import is.codion.common.reactive.value.Value;
 import is.codion.common.utilities.exceptions.Exceptions;
 import is.codion.common.utilities.version.Version;
 import is.codion.sdkboy.model.CandidateModel.CandidateRow;
-import is.codion.swing.common.model.component.table.FilterTableModel;
-import is.codion.swing.common.model.component.table.FilterTableModel.TableColumns;
+import is.codion.swing.common.model.component.table.SwingFilterTableModel;
 import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 
 import io.github.jagodevreede.sdkman.api.ProgressInformation;
@@ -45,8 +45,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static javax.swing.SortOrder.ASCENDING;
-import static javax.swing.SortOrder.DESCENDING;
+import static is.codion.common.model.filter.SortOrder.ASCENDING;
+import static is.codion.common.model.filter.SortOrder.DESCENDING;
 
 // tag::version_model[]
 public final class VersionModel {
@@ -55,8 +55,8 @@ public final class VersionModel {
 
 	private final SdkManApi sdkMan;
 	private final Observable<CandidateRow> selectedCandidate;
-	private final FilterTableModel<VersionRow, VersionColumn> tableModel =
-					FilterTableModel.builder()
+	private final SwingFilterTableModel<VersionRow, VersionColumn> tableModel =
+					SwingFilterTableModel.builder()
 									.columns(new VersionColumns())
 									.items(new VersionItems())
 									.included(new VersionIncluded())
@@ -86,7 +86,7 @@ public final class VersionModel {
 		tableModel.sort().order(VersionColumn.VERSION).add(DESCENDING);
 	}
 
-	public FilterTableModel<VersionRow, VersionColumn> tableModel() {
+	public SwingFilterTableModel<VersionRow, VersionColumn> tableModel() {
 		return tableModel;
 	}
 
