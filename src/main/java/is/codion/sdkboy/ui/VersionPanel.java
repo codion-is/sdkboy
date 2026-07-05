@@ -18,6 +18,9 @@
  */
 package is.codion.sdkboy.ui;
 
+import is.codion.common.model.worker.ProgressWorker;
+import is.codion.common.model.worker.ProgressWorker.ProgressReporter;
+import is.codion.common.model.worker.ProgressWorker.ProgressTaskHandler;
 import is.codion.common.reactive.event.Event;
 import is.codion.common.reactive.state.ObservableState;
 import is.codion.common.reactive.state.State;
@@ -29,9 +32,6 @@ import is.codion.sdkboy.model.VersionModel;
 import is.codion.sdkboy.model.VersionModel.VersionColumn;
 import is.codion.sdkboy.model.VersionModel.VersionRow;
 import is.codion.swing.common.model.action.DelayedAction;
-import is.codion.swing.common.model.worker.ProgressWorker;
-import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
-import is.codion.swing.common.model.worker.ProgressWorker.ProgressTaskHandler;
 import is.codion.swing.common.ui.Utilities;
 import is.codion.swing.common.ui.component.table.FilterTable;
 import is.codion.swing.common.ui.component.table.FilterTableColumn;

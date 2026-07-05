@@ -20,6 +20,7 @@ package is.codion.sdkboy.model;
 
 import is.codion.common.model.CancelException;
 import is.codion.common.model.component.table.FilterTableModel.TableColumns;
+import is.codion.common.model.worker.ProgressWorker.ProgressReporter;
 import is.codion.common.reactive.observer.Observable;
 import is.codion.common.reactive.observer.Observer;
 import is.codion.common.reactive.state.ObservableState;
@@ -29,7 +30,6 @@ import is.codion.common.utilities.exceptions.Exceptions;
 import is.codion.common.utilities.version.Version;
 import is.codion.sdkboy.model.CandidateModel.CandidateRow;
 import is.codion.swing.common.model.component.table.SwingFilterTableModel;
-import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
 
 import io.github.jagodevreede.sdkman.api.ProgressInformation;
 import io.github.jagodevreede.sdkman.api.SdkManApi;
