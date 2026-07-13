@@ -121,6 +121,9 @@ jlink {
     jpackage {
         if (OperatingSystem.current().isLinux) {
             icon = "src/main/icons/sdkboy.png"
+            // jpackage ignores --icon when building the installer from
+            // an app image, it looks for <launcher>.png in the resource dir
+            setResourceDir(file("src/main/icons"))
             installerType = "deb"
             installerOptions = listOf(
                 "--linux-shortcut"
