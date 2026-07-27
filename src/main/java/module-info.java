@@ -21,7 +21,7 @@
  */
 module is.codion.sdkboy {
 	requires is.codion.swing.common.ui;
-	requires is.codion.plugin.flatlaf;
+	requires is.codion.plugin.flatlaf.themes;
 	requires is.codion.plugin.flatlaf.intellij.themes;
 	requires ch.qos.logback.classic;
 	requires java.naming;

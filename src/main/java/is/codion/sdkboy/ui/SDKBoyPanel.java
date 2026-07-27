@@ -20,6 +20,8 @@ package is.codion.sdkboy.ui;
 
 import is.codion.common.reactive.state.State;
 import is.codion.common.utilities.exceptions.Exceptions;
+import is.codion.plugin.flatlaf.intellij.FlatLookAndFeelIntelliJThemes;
+import is.codion.plugin.flatlaf.themes.FlatLookAndFeelThemes;
 import is.codion.sdkboy.model.SDKBoyModel;
 import is.codion.swing.common.ui.Utilities;
 import is.codion.swing.common.ui.ancestor.Ancestor;
@@ -271,6 +273,8 @@ public final class SDKBoyPanel extends JPanel {
 			throwable.printStackTrace();
 			Dialogs.exception().show(throwable);
 		});
+		FlatLookAndFeelThemes.addAll();
+		FlatLookAndFeelIntelliJThemes.addAll();
 		findLookAndFeel(getLookAndFeelPreference())
 						.ifPresent(LookAndFeelEnabler::enable);
 
