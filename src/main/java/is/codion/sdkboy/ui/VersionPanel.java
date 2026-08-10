@@ -282,7 +282,7 @@ final class VersionPanel extends JPanel {
 	}
 
 	private void onCandidateSelected(CandidateRow candidateRow) {
-		table.columnModel().visible(VersionColumn.VENDOR)
+		table.columns().visible(VersionColumn.VENDOR)
 						.set(candidateRow != null && JAVA.equals(candidateRow.candidate().name()));
 	}
 
