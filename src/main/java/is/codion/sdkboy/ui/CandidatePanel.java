@@ -65,7 +65,7 @@ final class CandidatePanel extends JPanel {
 		candidate = model;
 		controls = new CandidateControls();
 		table = FilterTable.builder()
-						.model(this.candidate.tableModel())
+						.model(candidate.tableModel())
 						.columns(this::configureColumns)
 						.sortable(false)
 						.focusable(false)
