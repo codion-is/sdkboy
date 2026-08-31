@@ -60,7 +60,7 @@ public final class VersionModel {
 									.columns(new VersionColumns())
 									.items(new VersionItems())
 									.included(new VersionIncluded())
-									.onItemSelected(this::onVersionSelected)
+									.onSelectedItem(this::onVersionSelected)
 									.build();
 	private final State selectedInstalled = State.state();
 	private final State selectedUsed = State.state();
