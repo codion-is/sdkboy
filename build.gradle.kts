@@ -144,9 +144,14 @@ jlink {
     }
 }
 
-if (properties.containsKey("githubAccessToken")) {
+// The token is read from the GITHUB_TOKEN environment variable (CI), falling back
+// to the githubAccessToken project property. Never pass the token on the command
+// line in a PowerShell step, the JWT based token format contains dots and gets split.
+val githubToken = providers.environmentVariable("GITHUB_TOKEN")
+    .orElse(providers.gradleProperty("githubAccessToken"))
+if (githubToken.isPresent) {
     githubRelease {
-        token(properties["githubAccessToken"] as String)
+        token(githubToken)
         owner = "codion-is"
         allowUploadToExisting = true
         releaseAssets.from(tasks.named("jlinkZip").get().outputs.files)
