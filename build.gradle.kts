@@ -4,9 +4,9 @@ plugins {
     // The Badass Jlink Plugin provides jlink and jpackage
     // functionality and applies the java application plugin
     // https://badass-jlink-plugin.beryx.org
-    id("org.beryx.jlink") version "3.1.2"
+    id("org.beryx.jlink") version "4.1.1"
     // Just for managing the license headers
-    id("com.diffplug.spotless") version "7.0.1"
+    id("com.diffplug.spotless") version "8.2.1"
     // For the asciidoc docs
     id("org.asciidoctor.jvm.convert") version "4.0.4"
     // For GitHub Releases
@@ -22,7 +22,7 @@ dependencies {
     // The Codion Swing Common UI module
     implementation(libs.codion.swing.common.ui)
     // Include all the standard Flat Look and Feels
-    implementation(libs.codion.plugin.flatlaf.lookandfeels)
+    implementation(libs.codion.plugin.flatlaf.themes)
     // and a bunch of IntelliJ theme based ones
     implementation(libs.codion.plugin.flatlaf.intellij.themes)
     // The Codion logback plugin so we can configure
@@ -37,13 +37,12 @@ dependencies {
     implementation(libs.jna.platform)
 }
 
-version = "1.1.1"
+version = "1.1.3"
 
 java {
     toolchain {
-        // Use GraalVM 25 for native image support
-        languageVersion.set(JavaLanguageVersion.of(25))
-        // Request Oracle GraalVM for native image support
+        // Use the latest possible Java version
+        languageVersion.set(JavaLanguageVersion.of(26))
         vendor.set(JvmVendorSpec.ORACLE)
     }
 }
@@ -86,7 +85,7 @@ tasks.asciidoctor {
 
     attributes(
         mapOf(
-            "source-highlighter" to "prettify",
+            "source-highlighter" to "rouge",
             "tabsize" to "2"
         )
     )
@@ -125,6 +124,9 @@ jlink {
     jpackage {
         if (OperatingSystem.current().isLinux) {
             icon = "src/main/icons/sdkboy.png"
+            // jpackage ignores --icon when building the installer from
+            // an app image, it looks for <launcher>.png in the resource dir
+            setResourceDir(file("src/main/icons"))
             installerType = "deb"
             installerOptions = listOf(
                 "--linux-shortcut"
@@ -175,8 +177,14 @@ tasks.register<Zip>("nativeImageZip") {
 }
 
 if (properties.containsKey("githubAccessToken")) {
+// The token is read from the GITHUB_TOKEN environment variable (CI), falling back
+// to the githubAccessToken project property. Never pass the token on the command
+// line in a PowerShell step, the JWT based token format contains dots and gets split.
+val githubToken = providers.environmentVariable("GITHUB_TOKEN")
+    .orElse(providers.gradleProperty("githubAccessToken"))
+if (githubToken.isPresent) {
     githubRelease {
-        token(properties["githubAccessToken"] as String)
+        token(githubToken)
         owner = "codion-is"
         allowUploadToExisting = true
         // Only add the native image zip to release assets

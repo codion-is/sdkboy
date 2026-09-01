@@ -18,51 +18,21 @@
  */
 package is.codion.sdkboy.ui;
 
-import is.codion.common.model.selection.MultiSelection.Indexes;
-import is.codion.common.reactive.event.Event;
-import is.codion.common.reactive.state.ObservableState;
 import is.codion.common.reactive.state.State;
-import is.codion.common.reactive.value.Value;
+import is.codion.common.utilities.exceptions.Exceptions;
+import is.codion.plugin.flatlaf.intellij.FlatLookAndFeelIntelliJThemes;
+import is.codion.plugin.flatlaf.themes.FlatLookAndFeelThemes;
 import is.codion.sdkboy.model.SDKBoyModel;
-import is.codion.sdkboy.model.SDKBoyModel.CandidateModel;
-import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateColumn;
-import is.codion.sdkboy.model.SDKBoyModel.CandidateModel.CandidateRow;
-import is.codion.sdkboy.model.SDKBoyModel.PreferencesModel;
-import is.codion.sdkboy.model.SDKBoyModel.VersionModel;
-import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionColumn;
-import is.codion.sdkboy.model.SDKBoyModel.VersionModel.VersionRow;
-import is.codion.swing.common.model.action.DelayedAction;
-import is.codion.swing.common.model.worker.ProgressWorker;
-import is.codion.swing.common.model.worker.ProgressWorker.ProgressReporter;
-import is.codion.swing.common.model.worker.ProgressWorker.ProgressTask;
 import is.codion.swing.common.ui.Utilities;
 import is.codion.swing.common.ui.ancestor.Ancestor;
-import is.codion.swing.common.ui.component.table.FilterTable;
-import is.codion.swing.common.ui.component.table.FilterTableColumn;
-import is.codion.swing.common.ui.component.value.ComponentValue;
-import is.codion.swing.common.ui.control.Control;
 import is.codion.swing.common.ui.dialog.Dialogs;
 import is.codion.swing.common.ui.frame.Frames;
 import is.codion.swing.common.ui.key.KeyEvents;
-import is.codion.swing.common.ui.laf.LookAndFeelComboBox;
 import is.codion.swing.common.ui.laf.LookAndFeelEnabler;
 
-import ch.qos.logback.classic.Level;
-import org.jspecify.annotations.Nullable;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.BorderLayout;
@@ -76,12 +46,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static is.codion.common.reactive.state.State.and;
-import static is.codion.sdkboy.model.SDKBoyModel.PreferencesModel.getLookAndFeelPreference;
-import static is.codion.swing.common.model.action.DelayedAction.delayedAction;
-import static is.codion.swing.common.ui.Utilities.setClipboard;
+import static is.codion.sdkboy.model.PreferencesModel.getLookAndFeelPreference;
 import static is.codion.swing.common.ui.border.Borders.emptyBorder;
-import static is.codion.swing.common.ui.component.Components.*;
+import static is.codion.swing.common.ui.component.Components.borderLayoutPanel;
+import static is.codion.swing.common.ui.component.Components.textArea;
 import static is.codion.swing.common.ui.control.Control.command;
 import static is.codion.swing.common.ui.icon.SVGIcon.svgIcon;
 import static is.codion.swing.common.ui.laf.LookAndFeelProvider.findLookAndFeel;
@@ -90,12 +58,8 @@ import static java.awt.BorderLayout.*;
 import static java.awt.Desktop.getDesktop;
 import static java.awt.event.KeyEvent.*;
 import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
-import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createTitledBorder;
 import static javax.swing.JOptionPane.*;
-import static javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS;
-import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
-import static javax.swing.UIManager.getIcon;
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import static javax.swing.event.HyperlinkEvent.EventType.ACTIVATED;
 
@@ -124,19 +88,20 @@ public final class SDKBoyPanel extends JPanel {
 					""";
 
 	private final SDKBoyModel model = new SDKBoyModel();
-	private final CandidatePanel candidatePanel;
-	private final VersionPanel versionPanel;
+	private final CandidatePanel candidate;
+	private final VersionPanel version;
 	private final State help = State.builder()
 					.consumer(this::onHelp)
 					.build();
 
-	private PreferencesPanel preferencesPanel;
+	private PreferencesPanel preferences;
 
 	private SDKBoyPanel() {
 		super(borderLayout());
 		setDefaultUncaughtExceptionHandler(new SDKBoyExceptionHandler());
-		versionPanel = new VersionPanel(model, help);
-		candidatePanel = new CandidatePanel(model, versionPanel.installTask.active);
+		version = new VersionPanel(model, help);
+		candidate = new CandidatePanel(model.candidate(), version.installing(),
+						model.version().tableModel().items().refresher().active());
 		initializeUI();
 		setupKeyEvents();
 	}
@@ -144,48 +109,48 @@ public final class SDKBoyPanel extends JPanel {
 	@Override
 	public void updateUI() {
 		super.updateUI();
-		Utilities.updateUI(preferencesPanel);
+		Utilities.updateUI(preferences);
 	}
 
 	private void initializeUI() {
 		setBorder(emptyBorder());
-		add(candidatePanel, WEST);
-		add(versionPanel, CENTER);
+		add(candidate, WEST);
+		add(version, CENTER);
 	}
 
 	private void setupKeyEvents() {
 		KeyEvents.builder()
 						.condition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
 						.modifiers(ALT_DOWN_MASK)
-						.keyCode(VK_O)
-						.action(command(this::displayDescription))
-						.enable(this)
 						.keyCode(VK_P)
-						.action(command(this::displayPreferences))
-						.enable(this)
-						.keyCode(VK_R)
-						.action(command(versionPanel::refreshCandidates))
+						.action(command(this::preferences))
 						.enable(this)
 						.keyCode(VK_X)
 						.action(command(this::exit))
 						.enable(this)
+						.keyCode(VK_O)
+						.action(candidate.controls().description())
+						.enable(this)
+						.keyCode(VK_R)
+						.action(candidate.controls().refresh())
+						.enable(this)
 						.keyCode(VK_INSERT)
-						.action(versionPanel.install)
+						.action(version.controls().install())
 						.enable(this)
 						.keyCode(VK_DELETE)
-						.action(versionPanel.uninstall)
+						.action(version.controls().uninstall())
 						.enable(this)
 						.keyCode(VK_I)
-						.action(versionPanel.install)
+						.action(version.controls().install())
 						.enable(this)
 						.keyCode(VK_D)
-						.action(versionPanel.uninstall)
+						.action(version.controls().uninstall())
 						.enable(this)
 						.keyCode(VK_U)
-						.action(versionPanel.use)
+						.action(version.controls().use())
 						.enable(this)
 						.keyCode(VK_C)
-						.action(versionPanel.copyUseCommand)
+						.action(version.controls().copyUseCommand())
 						.enable(this);
 	}
 
@@ -201,32 +166,17 @@ public final class SDKBoyPanel extends JPanel {
 		repaint();
 	}
 
-	private void displayPreferences() {
-		if (preferencesPanel == null) {
-			preferencesPanel = new PreferencesPanel(model.preferencesModel());
+	private void preferences() {
+		if (preferences == null) {
+			preferences = new PreferencesPanel(model.preferences());
 		}
 		Dialogs.okCancel()
-						.component(preferencesPanel)
+						.component(preferences)
 						.owner(this)
 						.title("Preferences")
-						.onOk(model.preferencesModel()::save)
-						.onCancel(model.preferencesModel()::revert)
+						.onOk(model.preferences()::save)
+						.onCancel(model.preferences()::revert)
 						.show();
-	}
-
-	private void displayDescription() {
-		candidatePanel.table.model().selection().item().optional()
-						.ifPresent(candidateRow -> Dialogs.builder()
-										.component(textArea()
-														.value(candidateRow.candidate().description())
-														.rowsColumns(8, 40)
-														.editable(false)
-														.lineWrap(true)
-														.wrapStyleWord(true)
-														.scrollPane())
-										.owner(this)
-										.title(candidateRow.candidate().name() + " - Description")
-										.show());
 	}
 
 	private void exit() {
@@ -236,54 +186,13 @@ public final class SDKBoyPanel extends JPanel {
 	}
 
 	private boolean confirmExit() {
-		if (versionPanel.installTask.active.is()) {
+		if (version.installing().is()) {
 			return false;
 		}
 
-		return !model.preferencesModel().confirmExit().is() || showConfirmDialog(this,
+		return !model.preferences().confirmExit().is() || showConfirmDialog(this,
 						"Are you sure you want to exit?",
 						"Confirm Exit", YES_NO_OPTION, QUESTION_MESSAGE) == YES_OPTION;
-	}
-
-	private static JTextField createFilterField(Value<String> filter, FilterTable<?, ?> table, ObservableState installing) {
-		Indexes selectedIndexes = table.model().selection().indexes();
-
-		return stringField()
-						.link(filter)
-						.hint("Filter...")
-						.lowerCase(true)
-						.selectAllOnFocusGained(true)
-						.transferFocusOnEnter(true)
-						.keyEvent(KeyEvents.builder()
-										.keyCode(VK_UP)
-										.action(command(selectedIndexes::decrement)))
-						.keyEvent(KeyEvents.builder()
-										.keyCode(VK_DOWN)
-										.action(command(selectedIndexes::increment)))
-						.keyEvent(KeyEvents.builder()
-										.keyCode(VK_PAGE_UP)
-										.action(pageUpControl(table)))
-						.keyEvent(KeyEvents.builder()
-										.keyCode(VK_PAGE_DOWN)
-										.action(pageDownControl(table)))
-						.enabled(installing.not())
-						.build();
-	}
-
-	private static Control pageDownControl(FilterTable<?, ?> table) {
-		return command(() -> {
-			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
-			table.model().selection().index().update(index ->
-							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
-		});
-	}
-
-	private static Control pageUpControl(FilterTable<?, ?> table) {
-		return command(() -> {
-			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
-			table.model().selection().index().update(index ->
-							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
-		});
 	}
 
 	private final class SDKBoyExceptionHandler implements Thread.UncaughtExceptionHandler {
@@ -297,568 +206,11 @@ public final class SDKBoyPanel extends JPanel {
 		}
 	}
 
-	private static final class CandidatePanel extends JPanel {
-
-		private final FilterTable<CandidateRow, CandidateColumn> table;
-		private final JTextField filter;
-		private final JCheckBox installedOnly;
-
-		private CandidatePanel(SDKBoyModel model, ObservableState installing) {
-			super(borderLayout());
-			CandidateModel candidateModel = model.candidateModel();
-			ObservableState refreshingVersions = model.versionModel()
-							.tableModel().items().refresher().active();
-			table = FilterTable.builder()
-							.model(candidateModel.tableModel())
-							.columns(this::configureColumns)
-							.sortable(false)
-							.focusable(false)
-							.selectionMode(SINGLE_SELECTION)
-							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
-							.columnReordering(false)
-							.enabled(and(installing.not(), refreshingVersions.not()))
-							.cellRenderer(CandidateColumn.INSTALLED, Integer.class, renderer -> renderer
-											.horizontalAlignment(SwingConstants.CENTER))
-							.build();
-			filter = createFilterField(candidateModel.filter(), table, installing);
-			installedOnly = checkBox()
-							.link(candidateModel.installedOnly())
-							.text("Installed")
-							.mnemonic('T')
-							.focusable(false)
-							.enabled(installing.not())
-							.build();
-			setBorder(createCompoundBorder(createTitledBorder("Candidates"), emptyBorder()));
-			add(scrollPane()
-							.view(table)
-							.preferredWidth(220)
-							.build(), CENTER);
-			add(borderLayoutPanel()
-							.center(filter)
-							.east(installedOnly)
-							.build(), SOUTH);
-		}
-
-		private void configureColumns(FilterTableColumn.Builder<CandidateColumn> column) {
-			if (column.identifier() == CandidateColumn.INSTALLED) {
-				column.fixedWidth(80);
-			}
-		}
-	}
-
-	private static final class VersionPanel extends JPanel {
-
-		private static final String JAVA = "Java";
-
-		private final SDKBoyModel model;
-		private final CandidateModel candidateModel;
-		private final VersionModel versionModel;
-		private final InstallTask installTask;
-		private final FilterTable<VersionRow, VersionColumn> table;
-		private final Value<String> selectedVersionName = Value.nullable();
-		private final JTextField filter;
-		private final JCheckBox installedOnly;
-		private final JCheckBox downloadedOnly;
-		private final JCheckBox usedOnly;
-		private final JProgressBar refreshProgress;
-		private final JProgressBar installProgress;
-		private final JButton cancelDownload;
-		private final JPanel installingPanel;
-		private final JPanel southPanel;
-		private final Control install;
-		private final Control uninstall;
-		private final Control use;
-		private final Control copyUseCommand;
-		private final JButton helpButton;
-		private final SouthComponent southComponent;
-
-		private VersionPanel(SDKBoyModel model, State help) {
-			super(borderLayout());
-			this.model = model;
-			this.candidateModel = model.candidateModel();
-			this.versionModel = model.versionModel();
-			this.installTask = new InstallTask();
-			this.install = Control.builder()
-							.command(this::install)
-							.enabled(and(
-											versionModel.tableModel().selection().empty().not(),
-											versionModel.selectedInstalled().not()))
-							.build();
-			this.uninstall = Control.builder()
-							.command(this::uninstall)
-							.enabled(and(
-											versionModel.tableModel().selection().empty().not(),
-											versionModel.selectedInstalled()))
-							.build();
-			this.use = Control.builder()
-							.command(this::use)
-							.enabled(versionModel.selectedUsed().not())
-							.build();
-			this.copyUseCommand = Control.builder()
-							.command(this::copyUseCommand)
-							.build();
-			candidateModel.tableModel().selection().item().addConsumer(this::onCandidateSelected);
-			versionModel.tableModel().items().refresher().active().addConsumer(this::onRefreshing);
-			versionModel.tableModel().selection().item().addConsumer(this::onVersionSelected);
-			installTask.active.addConsumer(this::onInstalling);
-			installTask.downloading.addConsumer(this::onDownloading);
-			table = FilterTable.builder()
-							.model(versionModel.tableModel())
-							.columns(this::configureColumns)
-							.sortable(false)
-							.focusable(false)
-							.selectionMode(SINGLE_SELECTION)
-							.autoResizeMode(AUTO_RESIZE_ALL_COLUMNS)
-							.columnReordering(false)
-							.hiddenColumns(VersionColumn.VENDOR)
-							.doubleClick(command(this::onVersionDoubleClick))
-							.enabled(installTask.active.not())
-							.build();
-			filter = createFilterField(versionModel.filter(), table, installTask.active);
-			installedOnly = checkBox()
-							.link(versionModel.installedOnly())
-							.text("Installed")
-							.mnemonic('N')
-							.focusable(false)
-							.enabled(installTask.active.not())
-							.build();
-			downloadedOnly = checkBox()
-							.link(versionModel.downloadedOnly())
-							.text("Downloaded")
-							.mnemonic('A')
-							.focusable(false)
-							.enabled(installTask.active.not())
-							.build();
-			usedOnly = checkBox()
-							.link(versionModel.usedOnly())
-							.text("Used")
-							.mnemonic('E')
-							.focusable(false)
-							.enabled(installTask.active.not())
-							.build();
-			cancelDownload = button()
-							.control(Control.builder()
-											.command(installTask::cancel)
-											.caption("Cancel")
-											.enabled(installTask.downloading))
-							.keyEvent(KeyEvents.builder()
-											.keyCode(VK_ESCAPE)
-											.action(command(installTask::cancel)))
-							.build();
-			refreshProgress = progressBar()
-							.string("Refreshing...")
-							.stringPainted(true)
-							.build();
-			installProgress = progressBar()
-							.stringPainted(true)
-							.build();
-			installingPanel = borderLayoutPanel()
-							.center(installProgress)
-							.east(cancelDownload)
-							.build();
-			helpButton = button()
-							.control(Control.builder()
-											.command(help::toggle)
-											.caption("?")
-											.mnemonic('S'))
-							.focusable(false)
-							.build();
-			southPanel = borderLayoutPanel()
-							.center(filter)
-							.east(flexibleGridLayoutPanel(1, 0)
-											.add(installedOnly)
-											.add(downloadedOnly)
-											.add(usedOnly)
-											.add(helpButton))
-							.build();
-			southComponent = new SouthComponent();
-			setBorder(createCompoundBorder(createTitledBorder("Versions"), emptyBorder()));
-			add(scrollPane()
-							.view(table)
-							.build(), CENTER);
-			add(southPanel, SOUTH);
-		}
-
-		@Override
-		public void updateUI() {
-			super.updateUI();
-			Utilities.updateUI(southPanel, refreshProgress, installingPanel, installProgress, cancelDownload);
-		}
-
-		private void onVersionDoubleClick() {
-			if (versionModel.selectedUsed().is()) {
-				uninstall();
-			}
-			else if (versionModel.selectedInstalled().is()) {
-				use();
-			}
-			else {
-				install();
-			}
-		}
-
-		private void install() {
-			install(() -> {});
-		}
-
-		private void install(Runnable onInstalled) {
-			if (confirmInstall()) {
-				ProgressWorker.builder()
-								.task(installTask)
-								.onStarted(installTask::started)
-								.onProgress(installTask::progress)
-								.onPublish(installTask::publish)
-								.onDone(installTask::done)
-								.onResult(() -> installTask.result(onInstalled))
-								.execute();
-			}
-		}
-
-		private void uninstall() {
-			if (confirmUninstall()) {
-				ProgressWorker.builder()
-								.task(versionModel::uninstall)
-								.onResult(model::refresh)
-								.execute();
-			}
-		}
-
-		private void use() {
-			VersionRow selected = versionModel.selected();
-			if (selected.version().installed()) {
-				useInstalled();
-			}
-			else {
-				install(this::useInstalled);
-			}
-		}
-
-		private void useInstalled() {
-			if (confirmUse()) {
-				ProgressWorker.builder()
-								.task(versionModel::use)
-								.onResult(versionModel::refresh)
-								.execute();
-			}
-		}
-
-		private void copyUseCommand() {
-			VersionRow selected = versionModel.selected();
-			if (!selected.version().installed()) {
-				install(() -> copyUseCommand(selected));
-			}
-			else {
-				copyUseCommand(selected);
-			}
-		}
-
-		private void copyUseCommand(VersionRow versionRow) {
-			String command = "sdk use " + versionRow.candidate().id() + " " + versionRow.version().identifier();
-			setClipboard(command);
-			showMessageDialog(this, command + "\n\ncopied to clipboard", "Copied", INFORMATION_MESSAGE);
-		}
-
-		private boolean confirmInstall() {
-			return !model.preferencesModel().confirmActions().is() || showConfirmDialog(this,
-							"Install " + versionName() + "?",
-							"Confirm install", YES_NO_OPTION) == YES_OPTION;
-		}
-
-		private boolean confirmUninstall() {
-			return !model.preferencesModel().confirmActions().is() || showConfirmDialog(this,
-							"Uninstall " + versionName() + "?",
-							"Confirm uninstall", YES_NO_OPTION) == YES_OPTION;
-		}
-
-		private boolean confirmUse() {
-			return !model.preferencesModel().confirmActions().is() || showConfirmDialog(this,
-							"Set " + versionName() + " as your global SDK?",
-							"Confirm use", YES_NO_OPTION) == YES_OPTION;
-		}
-
-		private String versionName() {
-			return selectedVersionName.get();
-		}
-
-		private void onCandidateSelected(CandidateRow candidateRow) {
-			table.columnModel().visible(VersionColumn.VENDOR)
-							.set(candidateRow != null && JAVA.equals(candidateRow.candidate().name()));
-		}
-
-		private void onRefreshing(boolean refreshing) {
-			southComponent.toggle(refreshProgress, refreshing);
-		}
-
-		private void onVersionSelected(VersionRow versionRow) {
-			selectedVersionName.set(versionRow == null ? null :
-							versionRow.candidate().name() + " " + versionRow.version().identifier());
-		}
-
-		private void onInstalling(boolean installing) {
-			southComponent.toggle(installingPanel, installing);
-		}
-
-		private void onDownloading(boolean downloading) {
-			installProgress.setIndeterminate(!downloading);
-			if (downloading) {
-				cancelDownload.requestFocusInWindow();
-			}
-		}
-
-		private void refreshCandidates() {
-			candidateModel.tableModel().items().refresh();
-		}
-
-		private void configureColumns(FilterTableColumn.Builder<VersionColumn> column) {
-			switch (column.identifier()) {
-				case INSTALLED -> column.fixedWidth(80);
-				case DOWNLOADED -> column.fixedWidth(90);
-				case USED -> column.fixedWidth(60);
-			}
-		}
-
-		private final class InstallTask implements ProgressTask<String> {
-
-			private final State active = State.state();
-			private final State downloading = State.state();
-			private final Event<?> cancel = Event.event();
-
-			@Override
-			public void execute(ProgressReporter<String> progress) {
-				versionModel.install(progress, downloading, cancel);
-			}
-
-			private void cancel() {
-				cancel.run();
-			}
-
-			private void started() {
-				installProgress.setString("Procrastinating");
-				active.set(true);
-			}
-
-			private void progress(int progress) {
-				installProgress.getModel().setValue(progress);
-			}
-
-			private void publish(List<String> strings) {
-				installProgress.setString(strings.getFirst() + " " + versionName());
-			}
-
-			private void done() {
-				installProgress.setString("");
-				installProgress.getModel().setValue(0);
-				filter.requestFocusInWindow();
-				downloading.set(false);
-				active.set(false);
-			}
-
-			private void result(Runnable onInstalled) {
-				model.refresh();
-				onInstalled.run();
-			}
-		}
-
-		private final class SouthComponent {
-
-			private static final int SHOW_DELAY = 350;
-
-			private @Nullable DelayedAction show;
-
-			private void toggle(JComponent component, boolean visible) {
-				if (visible) {
-					show = delayedAction(SHOW_DELAY, () -> show(component));
-				}
-				else {
-					hide(component);
-				}
-			}
-
-			private void show(JComponent component) {
-				southPanel.add(component, NORTH);
-				revalidate();
-				repaint();
-			}
-
-			private void hide(JComponent component) {
-				cancel();
-				southPanel.remove(component);
-				revalidate();
-				repaint();
-			}
-
-			private void cancel() {
-				if (show != null) {
-					show.cancel();
-					show = null;
-				}
-			}
-		}
-	}
-
-	private static final class PreferencesPanel extends JPanel {
-
-		private final PreferencesModel preferences;
-		private final LookAndFeelComboBox lookAndFeelComboBox;
-		private final ComponentValue<JTextField, String> zipExecutable;
-		private final ComponentValue<JTextField, String> unzipExecutable;
-		private final ComponentValue<JTextField, String> tarExecutable;
-		private final ComponentValue<JCheckBox, Boolean> keepDownloadsAvailable;
-		private final ComponentValue<JCheckBox, Boolean> confirmActions;
-		private final ComponentValue<JCheckBox, Boolean> confirmExit;
-		private final ComponentValue<JComboBox<Level>, Level> logLevel;
-		private final JButton browseZipExecutableButton;
-		private final JButton browseUnzipExecutableButton;
-		private final JButton browseTarExecutableButton;
-		private final JButton logFileButton;
-		private final JButton logDirectoryButton;
-
-		private PreferencesPanel(PreferencesModel preferences) {
-			super(borderLayout());
-			this.preferences = preferences;
-			lookAndFeelComboBox = LookAndFeelComboBox.builder()
-							.onSelection(preferences::setLookAndFeelPreference)
-							.build();
-			zipExecutable = stringField()
-							.link(preferences.zipExecutable())
-							.columns(20)
-							.selectAllOnFocusGained(true)
-							.buildValue();
-			unzipExecutable = stringField()
-							.link(preferences.unzipExecutable())
-							.columns(20)
-							.selectAllOnFocusGained(true)
-							.buildValue();
-			tarExecutable = stringField()
-							.link(preferences.tarExecutable())
-							.columns(20)
-							.selectAllOnFocusGained(true)
-							.buildValue();
-			Icon directoryIcon = getIcon("FileView.directoryIcon");
-			browseZipExecutableButton = button()
-							.control(Control.builder()
-											.command(() -> browseExecutable(zipExecutable))
-											.smallIcon(directoryIcon))
-							.build();
-			browseUnzipExecutableButton = button()
-							.control(Control.builder()
-											.command(() -> browseExecutable(unzipExecutable))
-											.smallIcon(directoryIcon))
-							.build();
-			browseTarExecutableButton = button()
-							.control(Control.builder()
-											.command(() -> browseExecutable(tarExecutable))
-											.smallIcon(directoryIcon))
-							.build();
-			logFileButton = button()
-							.control(Control.builder()
-											.command(this::openLogFile)
-											.smallIcon(getIcon("FileView.fileIcon"))
-											.mnemonic('F')
-											.description("Open Log File (Alt-F)"))
-							.build();
-			logDirectoryButton = button()
-							.control(Control.builder()
-											.command(this::openLogDirectory)
-											.smallIcon(directoryIcon)
-											.mnemonic('D')
-											.description("Open Log Directory (Alt-D)"))
-							.build();
-			keepDownloadsAvailable = checkBox()
-							.link(preferences.keepDownloadsAvailable())
-							.text("Keep downloads available")
-							.mnemonic('K')
-							.buildValue();
-			confirmActions = checkBox()
-							.link(preferences.confirmActions())
-							.text("Confirm install, uninstall and use")
-							.mnemonic('I')
-							.buildValue();
-			confirmExit = checkBox()
-							.link(preferences.confirmExit())
-							.text("Confirm exit")
-							.mnemonic('X')
-							.buildValue();
-			logLevel = comboBox()
-							.model(preferences.logLevels())
-							.value(preferences.logLevel())
-							.buildValue();
-			setBorder(emptyBorder());
-			add(flexibleGridLayoutPanel(0, 1)
-							.add(label("Look & Feel")
-											.displayedMnemonic('L')
-											.labelFor(lookAndFeelComboBox))
-							.add(lookAndFeelComboBox)
-							.add(label("Select zip path")
-											.displayedMnemonic('Z')
-											.labelFor(zipExecutable.component()))
-							.add(borderLayoutPanel()
-											.layout(new BorderLayout(0, 5))
-											.center(zipExecutable.component())
-											.east(browseZipExecutableButton))
-							.add(label("Select unzip path")
-											.displayedMnemonic('U')
-											.labelFor(unzipExecutable.component()))
-							.add(borderLayoutPanel()
-											.layout(new BorderLayout(0, 5))
-											.center(unzipExecutable.component())
-											.east(browseUnzipExecutableButton))
-							.add(label("Select tar path")
-											.displayedMnemonic('T')
-											.labelFor(tarExecutable.component()))
-							.add(borderLayoutPanel()
-											.layout(new BorderLayout(0, 5))
-											.center(tarExecutable.component())
-											.east(browseTarExecutableButton))
-							.add(label("Log level")
-											.displayedMnemonic('V')
-											.labelFor(logLevel.component()))
-							.add(borderLayoutPanel()
-											.layout(new BorderLayout(0, 5))
-											.center(logLevel.component())
-											.east(panel()
-															.layout(new GridLayout(1, 0, 0, 5))
-															.add(logFileButton)
-															.add(logDirectoryButton)))
-							.add(keepDownloadsAvailable.component())
-							.add(confirmActions.component())
-							.add(confirmExit.component())
-							.build(), CENTER);
-		}
-
-		private void openLogFile() {
-			preferences.logFile().ifPresent(this::open);
-		}
-
-		private void openLogDirectory() {
-			preferences.logDirectory().ifPresent(this::open);
-		}
-
-		private void open(File file) {
-			try {
-				getDesktop().open(file);
-			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		private void browseExecutable(Value<String> executable) {
-			executable.set(Dialogs.select()
-							.files()
-							.owner(this)
-							.title("Select executable")
-							.selectFile()
-							.toPath()
-							.toString());
-		}
-	}
-
 	private static final class HelpPanel extends JPanel {
 
 		private final JTextArea shortcuts = textArea()
 						.value(SHORTCUTS)
-						.font(monospaceFont())
+						.font(HelpPanel::monospaceFont)
 						.editable(false)
 						.focusable(false)
 						.build();
@@ -882,9 +234,7 @@ public final class SDKBoyPanel extends JPanel {
 			Utilities.updateUI(shortcuts, aboutPanel);
 		}
 
-		private static Font monospaceFont() {
-			Font font = UIManager.getFont("TextArea.font");
-
+		private static Font monospaceFont(Font font) {
 			return new Font(Font.MONOSPACED, font.getStyle(), font.getSize());
 		}
 
@@ -901,7 +251,7 @@ public final class SDKBoyPanel extends JPanel {
 
 			private AboutPanel() {
 				super(borderLayout());
-				editorPane.setFont(monospaceFont());
+				editorPane.setFont(monospaceFont(editorPane.getFont()));
 				editorPane.setEditable(false);
 				editorPane.setFocusable(false);
 				editorPane.addHyperlinkListener(new OpenLink());
@@ -918,7 +268,7 @@ public final class SDKBoyPanel extends JPanel {
 						getDesktop().browse(event.getURL().toURI());
 					}
 					catch (Exception e) {
-						throw new RuntimeException(e);
+						throw Exceptions.runtime(e);
 					}
 				}
 			}
@@ -934,6 +284,8 @@ public final class SDKBoyPanel extends JPanel {
 			throwable.printStackTrace();
 			Dialogs.exception().show(throwable);
 		});
+		FlatLookAndFeelThemes.addAll();
+		FlatLookAndFeelIntelliJThemes.addAll();
 		findLookAndFeel(getLookAndFeelPreference())
 						.ifPresent(LookAndFeelEnabler::enable);
 

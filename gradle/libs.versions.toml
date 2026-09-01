@@ -1,14 +1,14 @@
 [versions]
-codion = "0.18.64"
-logback = "1.5.23"
-commons = "1.27.1"
-jna = "5.17.0"
+codion = "0.18.85"
+logback = "1.6.0"
+commons = "1.28.0"
+jna = "5.18.1"
 
 [libraries]
 codion-common-bom = { module = "is.codion:codion-common-bom", version.ref = "codion" }
 
 codion-swing-common-ui = { module = "is.codion:codion-swing-common-ui" }
-codion-plugin-flatlaf-lookandfeels = { group = "is.codion", name = "codion-plugin-flatlaf-lookandfeels" }
+codion-plugin-flatlaf-themes = { group = "is.codion", name = "codion-plugin-flatlaf-themes" }
 codion-plugin-flatlaf-intellij-themes = { module = "is.codion:codion-plugin-flatlaf-intellij-themes" }
 codion-plugin-logback = { module = "is.codion:codion-plugin-logback-proxy" }
 
