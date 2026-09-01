@@ -764,6 +764,12 @@
       ]
     },
     {
+      "type": "com.github.weisj.jsvg.SVGDocument"
+    },
+    {
+      "type": "com.github.weisj.jsvg.renderer.RenderContext"
+    },
+    {
       "type": "com.sun.crypto.provider.AESCipher$General",
       "methods": [
         {
@@ -867,7 +873,25 @@
       ]
     },
     {
+      "type": "com.sun.crypto.provider.TlsKeyMaterialGenerator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "com.sun.crypto.provider.TlsMasterSecretGenerator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.TlsPrfGenerator$V12",
       "methods": [
         {
           "name": "<init>",
@@ -928,6 +952,9 @@
     },
     {
       "type": "is.codion.plugin.flatlaf.indicator.FlatLafValidIndicatorFactory"
+    },
+    {
+      "type": "is.codion.plugin.flatlaf.indicator.FlatLafValidationIndicator"
     },
     {
       "type": "is.codion.plugin.flatlaf.intellij.IntelliJThemeProvider"
@@ -2004,6 +2031,12 @@
       "type": "is.codion.plugin.logback.LogbackProxy"
     },
     {
+      "type": "is.codion.sdkboy.ui.CandidatePanel"
+    },
+    {
+      "type": "is.codion.sdkboy.ui.PreferencesPanel"
+    },
+    {
       "type": "is.codion.sdkboy.ui.SDKBoyPanel",
       "jniAccessible": true,
       "methods": [
@@ -2029,6 +2062,12 @@
       "type": "is.codion.sdkboy.ui.SDKBoyPanel$VersionPanel"
     },
     {
+      "type": "is.codion.sdkboy.ui.VersionPanel"
+    },
+    {
+      "type": "is.codion.swing.common.model.dispatch.SwingDispatcher"
+    },
+    {
       "type": "is.codion.swing.common.ui.component.button.NullableCheckBox"
     },
     {
@@ -2038,7 +2077,13 @@
       "type": "is.codion.swing.common.ui.component.indicator.BackgroundColorValidIndicatorFactory"
     },
     {
+      "type": "is.codion.swing.common.ui.component.indicator.BackgroundColorValidationIndicator"
+    },
+    {
       "type": "is.codion.swing.common.ui.component.indicator.DefaultValidIndicatorFactory"
+    },
+    {
+      "type": "is.codion.swing.common.ui.component.indicator.UnderlineModifiedIndicator"
     },
     {
       "type": "is.codion.swing.common.ui.component.indicator.UnderlineModifiedIndicatorFactory"
@@ -2069,6 +2114,9 @@
         },
         {
           "name": "DECREASE_COLUMN_SIZE"
+        },
+        {
+          "name": "FOCUS_SEARCH_FIELD"
         },
         {
           "name": "INCREASE_COLUMN_SIZE"
@@ -2106,6 +2154,9 @@
       "type": "is.codion.swing.common.ui.component.text.HintTextField"
     },
     {
+      "type": "is.codion.swing.common.ui.dialog.ExceptionPanel"
+    },
+    {
       "type": "is.codion.swing.common.ui.laf.InstalledLookAndFeelProvider"
     },
     {
@@ -2113,6 +2164,9 @@
     },
     {
       "type": "is.codion.swing.common.ui.laf.LookAndFeelPanel"
+    },
+    {
+      "type": "is.codion.swing.common.ui.laf.PlatformLookAndFeels"
     },
     {
       "type": "is.codion.swing.common.ui.scaler.FontSizeScaler"
@@ -2982,6 +3036,17 @@
       ]
     },
     {
+      "type": "javax.swing.plaf.basic.BasicPanelUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
       "type": "javax.swing.plaf.basic.BasicRootPaneUI",
       "methods": [
         {
@@ -3004,11 +3069,77 @@
       ]
     },
     {
+      "type": "javax.swing.plaf.basic.BasicTextAreaUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "javax.swing.plaf.basic.BasicViewportUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "javax.swing.plaf.metal.MetalButtonUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "javax.swing.plaf.metal.MetalCheckBoxUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
       "type": "javax.swing.plaf.metal.MetalLookAndFeel",
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "javax.swing.plaf.metal.MetalScrollBarUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "javax.swing.plaf.metal.MetalScrollPaneUI",
+      "methods": [
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
         }
       ]
     },
@@ -3293,6 +3424,60 @@
           "parameterTypes": [
             "int"
           ]
+        }
+      ]
+    },
+    {
+      "type": "sun.font.FontConfigManager$FcCompFont",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "allFonts"
+        },
+        {
+          "name": "fcName"
+        },
+        {
+          "name": "firstFont"
+        }
+      ]
+    },
+    {
+      "type": "sun.font.FontConfigManager$FontConfigFont",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "familyName"
+        },
+        {
+          "name": "fontFile"
+        },
+        {
+          "name": "fullName"
+        },
+        {
+          "name": "styleStr"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.font.FontConfigManager$FontConfigFont[]"
+    },
+    {
+      "type": "sun.font.FontConfigManager$FontConfigInfo",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "cacheDirs"
+        },
+        {
+          "name": "fcVersion"
         }
       ]
     },
@@ -4014,6 +4199,24 @@
         },
         {
           "name": "xid"
+        }
+      ]
+    },
+    {
+      "type": "sun.net.www.protocol.http.Handler",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.net.www.protocol.https.Handler",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
         }
       ]
     },

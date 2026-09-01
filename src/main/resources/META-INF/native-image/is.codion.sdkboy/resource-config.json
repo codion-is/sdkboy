@@ -47,7 +47,13 @@
       "name": "is.codion.swing.common.ui.component.text.StringLengthValidator"
     },
     {
+      "name": "is.codion.swing.common.ui.dialog.DefaultExceptionDialogBuilder"
+    },
+    {
       "name": "is.codion.swing.common.ui.dialog.DefaultFileSelectionDialogBuilder"
+    },
+    {
+      "name": "is.codion.swing.common.ui.dialog.ExceptionPanel"
     },
     {
       "name": "sun.awt.resources.awt"
@@ -61,16 +67,22 @@
       "glob": "META-INF/services/com.formdev.flatlaf.FlatDefaultsAddon"
     },
     {
+      "glob": "META-INF/services/com.github.weisj.jsvg.logging.LogManager"
+    },
+    {
+      "glob": "META-INF/services/is.codion.common.utilities.dispatch.Dispatcher"
+    },
+    {
       "glob": "META-INF/services/is.codion.common.utilities.logging.LoggerProxy"
     },
     {
       "glob": "META-INF/services/is.codion.common.utilities.resource.Resources"
     },
     {
-      "glob": "META-INF/services/is.codion.swing.common.ui.component.indicator.ModifiedIndicatorFactory"
+      "glob": "META-INF/services/is.codion.swing.common.ui.component.indicator.ModifiedIndicator"
     },
     {
-      "glob": "META-INF/services/is.codion.swing.common.ui.component.indicator.ValidIndicatorFactory"
+      "glob": "META-INF/services/is.codion.swing.common.ui.component.indicator.ValidationIndicator"
     },
     {
       "glob": "META-INF/services/is.codion.swing.common.ui.laf.LookAndFeelProvider"
@@ -116,6 +128,12 @@
     },
     {
       "glob": "META-INF/services/org.slf4j.spi.SLF4JServiceProvider"
+    },
+    {
+      "glob": "ch/qos/logback/classic/logback-classic-version.properties"
+    },
+    {
+      "glob": "ch/qos/logback/core/logback-core-version.properties"
     },
     {
       "glob": "com/formdev/flatlaf/FlatDarculaLaf.properties"
@@ -928,6 +946,15 @@
       "glob": "is/codion/swing/common/ui/component/text/StringLengthValidator_en_US.properties"
     },
     {
+      "glob": "is/codion/swing/common/ui/dialog/DefaultExceptionDialogBuilder.properties"
+    },
+    {
+      "glob": "is/codion/swing/common/ui/dialog/DefaultExceptionDialogBuilder_en.properties"
+    },
+    {
+      "glob": "is/codion/swing/common/ui/dialog/DefaultExceptionDialogBuilder_en_US.properties"
+    },
+    {
       "glob": "is/codion/swing/common/ui/dialog/DefaultFileSelectionDialogBuilder.properties"
     },
     {
@@ -935,6 +962,15 @@
     },
     {
       "glob": "is/codion/swing/common/ui/dialog/DefaultFileSelectionDialogBuilder_en_US.properties"
+    },
+    {
+      "glob": "is/codion/swing/common/ui/dialog/ExceptionPanel.properties"
+    },
+    {
+      "glob": "is/codion/swing/common/ui/dialog/ExceptionPanel_en.properties"
+    },
+    {
+      "glob": "is/codion/swing/common/ui/dialog/ExceptionPanel_en_US.properties"
     },
     {
       "glob": "is/codion/swing/common/ui/icon/codion-logo-transparent-48x48.png"
