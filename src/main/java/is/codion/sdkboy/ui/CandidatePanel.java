@@ -24,8 +24,6 @@ import is.codion.common.reactive.value.Value;
 import is.codion.sdkboy.model.CandidateModel;
 import is.codion.sdkboy.model.CandidateModel.CandidateColumn;
 import is.codion.sdkboy.model.CandidateModel.CandidateRow;
-import is.codion.sdkboy.model.SDKBoyModel;
-import is.codion.swing.common.ui.ancestor.Ancestor;
 import is.codion.swing.common.ui.component.table.FilterTable;
 import is.codion.swing.common.ui.component.table.FilterTableColumn;
 import is.codion.swing.common.ui.control.Control;
@@ -33,8 +31,8 @@ import is.codion.swing.common.ui.dialog.Dialogs;
 import is.codion.swing.common.ui.key.KeyEvents;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -151,19 +149,19 @@ final class CandidatePanel extends JPanel {
 	}
 
 	private static Control pageDownControl(FilterTable<?, ?> table) {
-		return command(() -> {
-			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
+		return command(() -> table.viewport().map(JComponent::getHeight).ifPresent(viewportHeight -> {
+			int visibleRowCount = viewportHeight / table.getRowHeight();
 			table.model().selection().index().update(index ->
-							Math.min((index == -1 ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
-		});
+							Math.min((index == null ? 0 : index) + visibleRowCount - 1, table.model().items().included().size() - 1));
+		}));
 	}
 
 	private static Control pageUpControl(FilterTable<?, ?> table) {
-		return command(() -> {
-			int visibleRowCount = Ancestor.ofType(JScrollPane.class).of(table).get().getViewport().getHeight() / table.getRowHeight();
+		return command(() -> table.viewport().map(JComponent::getHeight).ifPresent(viewportHeight -> {
+			int visibleRowCount = viewportHeight / table.getRowHeight();
 			table.model().selection().index().update(index ->
-							Math.max((index == -1 ? 0 : index) - visibleRowCount + 1, 0));
-		});
+							Math.max((index == null ? 0 : index) - visibleRowCount + 1, 0));
+		}));
 	}
 
 	final class CandidateControls {

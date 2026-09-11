@@ -325,13 +325,13 @@ final class VersionPanel extends JPanel {
 			install = Control.builder()
 							.command(VersionPanel.this::install)
 							.enabled(and(
-											version.tableModel().selection().empty().not(),
+											version.tableModel().selection().present(),
 											version.selectedInstalled().not()))
 							.build();
 			uninstall = Control.builder()
 							.command(VersionPanel.this::uninstall)
 							.enabled(and(
-											version.tableModel().selection().empty().not(),
+											version.tableModel().selection().present(),
 											version.selectedInstalled()))
 							.build();
 			use = Control.builder()

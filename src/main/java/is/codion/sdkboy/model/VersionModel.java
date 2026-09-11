@@ -171,7 +171,7 @@ public final class VersionModel {
 
 	private void onFilterChanged() {
 		tableModel.items().filter();
-		if (!filter.isNull() || tableModel.selection().empty().is()) {
+		if (!filter.isNull() || !tableModel.selection().present().is()) {
 			tableModel.selection().indexes().clear();
 			tableModel.selection().indexes().increment();
 		}
@@ -179,7 +179,7 @@ public final class VersionModel {
 
 	private void onCandidateSelected() {
 		tableModel.items().refresh(_ -> {
-			if (tableModel.selection().empty().is()) {
+			if (!tableModel.selection().present().is()) {
 				tableModel.selection().indexes().increment();
 			}
 		});
