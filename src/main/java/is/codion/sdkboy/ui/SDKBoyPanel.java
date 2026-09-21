@@ -284,9 +284,9 @@ public final class SDKBoyPanel extends JPanel {
 						.component(sdkBoyPanel)
 						.title("SDKBOY " + SDKBoyModel.VERSION)
 						.icon(svgIcon(SDKBoyPanel.class.getResource("logo.svg"), 68, Color.BLACK))
-						.centerFrame(true)
 						.defaultCloseOperation(DO_NOTHING_ON_CLOSE)
 						.onClosing(_ -> sdkBoyPanel.exit())
+						.center(true)
 						.show();
 	}
 }

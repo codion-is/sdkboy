@@ -374,7 +374,11 @@ final class VersionPanel extends JPanel {
 		@Override
 		public void onStarted() {
 			installProgress.setString("Procrastinating");
-			active.set(true);
+		}
+
+		@Override
+		public void onWorking(boolean working) {
+			active.set(working);
 		}
 
 		@Override
@@ -393,7 +397,6 @@ final class VersionPanel extends JPanel {
 			installProgress.setValue(0);
 			filter.requestFocusInWindow();
 			downloading.set(false);
-			active.set(false);
 		}
 
 		@Override
