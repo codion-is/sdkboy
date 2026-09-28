@@ -267,7 +267,7 @@ public final class VersionModel {
 		}
 
 		@Override
-		public Class<?> columnClass(VersionColumn column) {
+		public Class<?> type(VersionColumn column) {
 			return switch (column) {
 				case VENDOR -> String.class;
 				case VERSION -> VersionInfo.class;

@@ -119,7 +119,7 @@ public final class CandidateModel {
 		}
 
 		@Override
-		public Class<?> columnClass(CandidateColumn column) {
+		public Class<?> type(CandidateColumn column) {
 			return switch (column) {
 				case NAME -> String.class;
 				case INSTALLED -> Integer.class;
