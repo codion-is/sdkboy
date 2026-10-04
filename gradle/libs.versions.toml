@@ -1,5 +1,5 @@
 [versions]
-codion = "0.18.88"
+codion = "0.18.89"
 logback = "1.6.0"
 commons = "1.28.0"
 jna = "5.18.1"
