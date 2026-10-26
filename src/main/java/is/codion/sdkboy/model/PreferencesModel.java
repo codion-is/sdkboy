@@ -87,7 +87,7 @@ public final class PreferencesModel {
 	}
 
 	public Level logLevel() {
-		return (Level) logger.getLogLevel(logger.rootLogger());
+		return (Level) logger.level(logger.root());
 	}
 
 	public Optional<File> logFile() {
@@ -114,7 +114,7 @@ public final class PreferencesModel {
 	public void save() {
 		UserPreferences.put(CONFIRM_ACTIONS, Boolean.toString(confirmActions.is()));
 		UserPreferences.put(CONFIRM_EXIT, Boolean.toString(confirmExit.is()));
-		logger.setLogLevel(logger.rootLogger(), logLevels.selection().item().getOrThrow());
+		logger.level(logger.root(), logLevels.selection().item().getOrThrow());
 		sdkManUi.zipExecutable = zipExecutable.get();
 		sdkManUi.unzipExecutable = unzipExecutable.get();
 		sdkManUi.tarExecutable = tarExecutable.get();
@@ -131,7 +131,7 @@ public final class PreferencesModel {
 	public void revert() {
 		confirmActions.set(getConfirmActionsPreference());
 		confirmExit.set(getConfirmExitPreference());
-		logLevels.selection().item().set((Level) logger.getLogLevel(logger.rootLogger()));
+		logLevels.selection().item().set((Level) logger.level(logger.root()));
 		zipExecutable.set(sdkManUi.zipExecutable);
 		unzipExecutable.set(sdkManUi.unzipExecutable);
 		tarExecutable.set(sdkManUi.tarExecutable);
