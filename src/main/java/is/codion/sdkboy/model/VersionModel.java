@@ -21,8 +21,9 @@ package is.codion.sdkboy.model;
 import is.codion.common.model.CancelException;
 import is.codion.common.model.component.table.FilterTableModel.TableColumns;
 import is.codion.common.model.worker.ProgressWorker.ProgressReporter;
-import is.codion.common.reactive.observer.Observable;
+import is.codion.common.reactive.observable.Observable;
 import is.codion.common.reactive.observer.Observer;
+import is.codion.common.reactive.sensor.Sensor;
 import is.codion.common.reactive.state.ObservableState;
 import is.codion.common.reactive.state.State;
 import is.codion.common.reactive.value.Value;
@@ -122,7 +123,7 @@ public final class VersionModel {
 		tableModel.items().refresh();
 	}
 
-	public void install(ProgressReporter<String> progress, State downloading, Observer<?> cancel) {
+	public void install(ProgressReporter<String> progress, State downloading, Sensor cancel) {
 		VersionRow selected = selected();
 		if (selected.version.available()) {
 			progress.report(DONE);
@@ -151,7 +152,7 @@ public final class VersionModel {
 	}
 
 	private void download(VersionRow versionRow, ProgressReporter<String> progress,
-	                      State downloading, Observer<?> cancel) {
+	                      State downloading, Sensor cancel) {
 		DownloadTask task = sdkMan.download(versionRow.candidate.id(), versionRow.version.identifier());
 		task.setProgressInformation(new DownloadProgress(progress, downloading));
 		Runnable cancelTask = task::cancel;

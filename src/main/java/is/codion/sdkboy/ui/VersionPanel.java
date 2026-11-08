@@ -364,11 +364,11 @@ final class VersionPanel extends JPanel {
 
 		private final State active = State.state();
 		private final State downloading = State.state();
-		private final Event<?> cancel = Event.event();
+		private final Event cancel = Event.event();
 
 		@Override
 		public void execute(ProgressReporter<String> progress) {
-			version.install(progress, downloading, cancel);
+			version.install(progress, downloading, cancel.sensor());
 		}
 
 		@Override
